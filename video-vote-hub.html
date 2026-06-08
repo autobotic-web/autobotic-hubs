@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best Video of the Month</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
+    background:radial-gradient(1200px 700px at 50% -10%, #2a1d5e 0%, #1a1238 45%, #0b1026 100%)}
+  header{text-align:center;padding:18px 12px 8px}
+  header h2{font-size:clamp(26px,4.5vw,46px);font-weight:800;
+    background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin-top:6px;color:#cfd2f0;font-size:14px;max-width:620px;margin-left:auto;margin-right:auto}
+  .turnout{max-width:620px;margin:14px auto 0;padding:0 14px}
+  .turnout .bar{height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .turnout .fill{height:100%;width:0;background:linear-gradient(90deg,#fbbf24,#34d399);transition:width .6s ease}
+  .turnout .txt{text-align:center;margin-top:6px;color:#ffe27a;font-weight:800;font-size:14px}
+  .grid{max-width:860px;margin:18px auto 30px;padding:0 14px;display:grid;gap:14px;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .cand{background:#1b1f44;border:2px solid #33386f;border-radius:18px;padding:16px;display:flex;
+    flex-direction:column;gap:8px;transition:transform .15s,border-color .2s}
+  .cand:hover{transform:translateY(-3px)}
+  .cand.voted{border-color:#34d399;box-shadow:0 0 22px rgba(52,211,153,.35)}
+  .cand.mine{opacity:.75}
+  .cand b{font-size:16px}
+  .cand .lesson{color:#9fd6ff;font-weight:700;font-size:13px}
+  .cand .built{color:#ffeebf;font-size:13px;line-height:1.5;font-style:italic;flex:1}
+  .cand .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .cand a.watch{flex:1;text-align:center;text-decoration:none;border:2px solid #5b63b8;color:#c3caff;
+    border-radius:999px;padding:9px 14px;font-weight:800;font-size:13.5px}
+  .cand a.watch:hover{border-color:#22d3ee;color:#fff}
+  .cand button.vote{flex:1;cursor:pointer;border:2px solid #fbbf24;border-radius:999px;padding:8px 14px;font-weight:800;
+    font-size:13.5px;font-family:inherit;background:transparent;color:#ffd96a}
+  .cand button.vote.sel{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3b2600;border-color:transparent}
+  .cand button.vote:hover:not(:disabled){filter:brightness(1.1)}
+  .cand button.vote:disabled{opacity:.55;cursor:default}
+  .cand .minenote{text-align:center;color:#aab0e6;font-size:12.5px;font-weight:700;padding:9px 0}
+  .empty,.err{text-align:center;color:#aab0e6;padding:40px 16px;font-size:15px;grid-column:1/-1}
+  .err{color:#fecdd3}
+  .note{max-width:620px;margin:0 auto 26px;text-align:center;color:#9fa6dd;font-size:12.5px;padding:0 14px}
+</style>
+</head>
+<body>
+  <header>
+    <h2>🏆 Best Video of the Month</h2>
+    <p>Watch your classmates' build videos in the <b>Intermediate Group</b>, then vote for the best one. One vote each — tap again to remove it, or pick another video, any time before the month ends. Votes stay secret until the winner reveal!</p>
+  </header>
+  <div class="turnout">
+    <div class="bar"><div class="fill" id="tFill"></div></div>
+    <div class="txt" id="tTxt">Loading…</div>
+  </div>
+  <main class="grid" id="grid"><div class="empty">Loading candidates…</div></main>
+  <p class="note">Videos become candidates when your teacher reviews them. Winner gets <b>+100 XP</b> and the 🏆 Best Video badge. No voting for your own video 🙂</p>
+
+<script>
+  let MYVOTE=null;
+  function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function render(d){
+    MYVOTE=d.myVote||null;
+    const pct = d.totalStudents ? Math.round(d.votedCount/d.totalStudents*100) : 0;
+    document.getElementById('tFill').style.width=pct+'%';
+    document.getElementById('tTxt').textContent='🗳 '+d.votedCount+' of '+d.totalStudents+' students have voted ('+d.month+')';
+    const grid=document.getElementById('grid'); grid.innerHTML='';
+    if(!(d.candidates||[]).length){ grid.innerHTML='<div class="empty">No reviewed videos yet this month — post yours in the Intermediate Group and get it reviewed to enter! 🎬</div>'; return; }
+    d.candidates.forEach(c=>{
+      const el=document.createElement('div');
+      el.className='cand'+(MYVOTE===c.rowId?' voted':'')+(c.isMine?' mine':'');
+      el.dataset.rowId=c.rowId;
+      el.innerHTML='<b>'+esc(c.memberName)+(c.isMine?' (you)':'')+'</b>'+
+        '<span class="lesson">'+esc(c.lessonTitle||c.lessonId)+'</span>'+
+        (c.built?'<div class="built">“'+esc(c.built)+'”</div>':'<div class="built"></div>')+
+        '<div class="row">'+
+        (c.link?'<a class="watch" href="'+esc(c.link)+'" target="_blank" rel="noopener">▶ Watch</a>':'<a class="watch" href="#" onclick="openShowcase(event)">▶ Intermediate Group</a>')+
+        (c.isMine?'<div class="minenote">This is your video 🌟</div>'
+                 :'<button class="vote'+(MYVOTE===c.rowId?' sel':'')+'" onclick="vote(this)">'+(MYVOTE===c.rowId?'✅ Your vote':'🗳 Vote')+'</button>')+
+        '</div>';
+      grid.appendChild(el);
+    });
+  }
+
+  function vote(btn){
+    const rowId=btn.closest('.cand').dataset.rowId;
+    const retract = (MYVOTE===rowId);          // second click on your vote = remove it
+    document.querySelectorAll('.vote').forEach(b=>b.disabled=true);
+    parent.postMessage({source:'cast-vote', candidateRowId:rowId, retract:retract}, '*');
+  }
+  function openShowcase(e){ e.preventDefault(); parent.postMessage({source:'open-showcase'}, '*'); }
+
+  window.addEventListener('message',(e)=>{
+    const d=e.data;
+    if(d && d.source==='vote-data'){
+      if(d.error){ document.getElementById('grid').innerHTML='<div class="err">⛔ '+esc(d.error==='login-required'?'Please log in to vote.':d.error)+'</div>'; return; }
+      render(d);
+    }
+    if(d && d.source==='vote-result'){
+      document.querySelectorAll('.vote').forEach(b=>b.disabled=false);
+      if(d.ok){
+        MYVOTE=d.myVote;
+        document.querySelectorAll('.cand').forEach(c=>{
+          c.classList.toggle('voted', c.dataset.rowId===MYVOTE);
+          const b=c.querySelector('.vote'); if(b){ b.textContent=(c.dataset.rowId===MYVOTE)?'✅ Your vote':'🗳 Vote'; b.classList.toggle('sel', c.dataset.rowId===MYVOTE); }
+        });
+      } else if(d.error){
+        alert(d.error==='no-self-vote'?'You can’t vote for your own video 🙂':'Vote failed: '+d.error);
+      }
+    }
+  });
+</script>
+</body>
+</html>

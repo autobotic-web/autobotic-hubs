@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Summary</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
+    background:radial-gradient(1200px 700px at 50% -10%, #2a1d5e 0%, #1a1238 45%, #0b1026 100%)}
+  header{text-align:center;padding:14px 12px 4px}
+  header h2{font-size:clamp(24px,4.5vw,40px);font-weight:800;
+    background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin-top:6px;color:#cfd2f0;font-size:13.5px;max-width:560px;margin-left:auto;margin-right:auto}
+  .card{max-width:620px;margin:14px auto 24px;background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:18px 20px}
+  .title{font-size:17px;font-weight:800;color:#9fd6ff;margin-bottom:8px}
+  .row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px solid #252a55}
+  .row .v{font-weight:800;color:#5eead4}
+  .row .miss{color:#6e74b0;font-style:italic;font-weight:400}
+  .total{margin-top:12px;text-align:center;font-size:18px;font-weight:800;color:#ffd64a}
+  .note{margin-top:8px;padding:10px 12px;background:rgba(255,214,74,.08);border-left:3px solid #ffd64a;
+    border-radius:8px;color:#ffeebf;font-size:13px}
+  .docs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .doc{font-size:12px;font-weight:700;border-radius:999px;padding:3px 12px;border:1px solid #3b416f;color:#aab0e6}
+  .doc.ok{border-color:rgba(52,211,153,.5);color:#a7f3d0;background:rgba(52,211,153,.1)}
+  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px}
+</style>
+</head>
+<body>
+  <header>
+    <h2>🚀 My Project</h2>
+    <p>Project Rubric: Functionality /30 · Explanation /20 · Design /20 · Creativity /10 · Presentation /10 · Community engagement /10 (posting + giving feedback to classmates).</p>
+  </header>
+  <div class="card" id="card"><div class="empty">Loading…</div></div>
+
+<script>
+  const L=[['functionality','Functionality',30],['explanation','Explanation',20],['design','Design decisions',20],
+           ['creativity','Creativity',10],['presentation','Presentation',10],['engagement','Community engagement',10]];
+  function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function pj(s,fb){ try{ const v=JSON.parse(s); return v===null||v===undefined?fb:v; }catch(e){ return fb; } }
+
+  function render(d){
+    const card=document.getElementById('card');
+    const det=pj(d.details,{}), plan=pj(d.plan,[]), bud=pj(d.budget,[]), log=pj(d.logsheet,[]);
+    const docs=[['Details', !!(det.title||det.solution)],['Plan', plan.length>0],['Budget', bud.length>0],['Logsheet', log.length>0]];
+    let h='<div class="title">'+esc(det.title||'My engineering project')+'</div>'+
+      '<div class="docs">'+docs.map(x=>'<span class="doc'+(x[1]?' ok':'')+'">'+(x[1]?'✓ ':'')+x[0]+'</span>').join('')+'</div>';
+    if(d.scoreTotal!==null&&d.scoreTotal!==undefined){
+      const p=pj(d.scoreParts,{});
+      h+=L.map(r=>'<div class="row"><span>'+r[1]+'</span><span class="v">'+
+        (p[r[0]]!==undefined?p[r[0]]:'<span class="miss">—</span>')+'/'+r[2]+'</span></div>').join('');
+      h+='<div class="total">🏅 '+d.scoreTotal+'/100</div>';
+      if(d.scoreNote) h+='<div class="note">💬 Teacher: “'+esc(d.scoreNote)+'”</div>';
+    } else {
+      h+='<div class="empty">Not scored yet — keep building, keep logging! Your teacher scores the project against the rubric when it\'s presented.</div>';
+    }
+    card.innerHTML=h;
+  }
+
+  window.addEventListener('message',(e)=>{ const d=e.data;
+    if(d && d.source==='project-data'){
+      if(d.error){ document.getElementById('card').innerHTML='<div class="empty">Could not load project.</div>'; return; }
+      render(d);
+    } });
+</script>
+</body>
+</html>

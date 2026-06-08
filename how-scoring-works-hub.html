@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Scoring Works</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
+    background:radial-gradient(1200px 700px at 50% -10%, #2a1d5e 0%, #1a1238 45%, #0b1026 100%)}
+  header{text-align:center;padding:18px 12px 6px}
+  header h2{font-size:clamp(26px,4.5vw,44px);font-weight:800;
+    background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin-top:8px;color:#cfd2f0;font-size:14px;max-width:640px;margin-left:auto;margin-right:auto}
+  .sect{max-width:760px;margin:14px auto;padding:0 14px}
+  .card{background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:18px 22px}
+  .card h3{font-size:17px;color:#9fd6ff;margin-bottom:8px}
+  .card p,.card li{color:#dfe2ff;font-size:14px;line-height:1.65}
+  .card ul{margin:8px 0 0 18px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;background:#161a3a;border-radius:10px;overflow:hidden}
+  th,td{border:1px solid #2c3163;padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#1d2250;color:#ffd64a;font-size:12.5px}
+  .pill{display:inline-block;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.4);
+    color:#a7f3d0;border-radius:999px;padding:2px 12px;font-size:12px;font-weight:700;margin:2px 4px 2px 0}
+  .note{color:#9fa6dd;font-size:12.5px;margin-top:10px}
+</style>
+</head>
+<body>
+  <header>
+    <h2>📊 How We Score Your Child</h2>
+    <p>Every score on the dashboard comes from a written rubric your teacher follows — nothing is a feeling or a guess. Here's exactly how each number is produced, and what we do to keep scoring fair.</p>
+  </header>
+
+  <div class="sect"><div class="card">
+    <h3>1 · Lessons — skills from build videos</h3>
+    <p>After each lesson your child records a short (10–60 s) video of what they built — including a "fail clip" showing something that went wrong and how they fixed it. The teacher scores the video on five skills, 0–6 each:</p>
+    <table>
+      <tr><th>Skill</th><th>What earns marks</th></tr>
+      <tr><td>🎤 Presentation</td><td>Clear demo; explains the project in their own words</td></tr>
+      <tr><td>🔌 Hardware</td><td>Correct setup shown and working; names the components</td></tr>
+      <tr><td>💻 Coding</td><td>Shows the code and explains the key lines; own modifications</td></tr>
+      <tr><td>🐛 Problem-solving</td><td>Names what broke, how they diagnosed it, what they'd try next time</td></tr>
+      <tr><td>✨ Creativity</td><td>Their own variation or feature, built independently</td></tr>
+    </table>
+    <p class="note">The Skills Profile on the dashboard averages the most recent reviews, so improvement shows quickly. Quizzes inside each lesson check knowledge separately.</p>
+  </div></div>
+
+  <div class="sect"><div class="card">
+    <h3>2 · IMCC — the Internal Mini Classroom Competition</h3>
+    <p>Nine robot missions, each scored out of 100: a <b>practical run worth 90 points</b>, judged component by component on a published rubric (e.g. Line Following: Completion 40 + Accuracy 30 + Speed 20), plus a <b>10-question quiz worth 10 points</b> (best of 3 attempts, marked automatically).</p>
+  </div></div>
+
+  <div class="sect"><div class="card">
+    <h3>3 · Project — engineering for real</h3>
+    <p>Each student designs and documents their own project (plan, budget, logsheet) and presents it. Scored out of 100:</p>
+    <p style="margin-top:8px">
+      <span class="pill">Functionality 30</span><span class="pill">Explanation 20</span><span class="pill">Design decisions 20</span>
+      <span class="pill">Creativity 10</span><span class="pill">Presentation 10</span><span class="pill">Community engagement 10</span>
+    </p>
+    <p class="note">Community engagement rewards what your child does — posting their project video on time, replying to comments, and giving helpful feedback on classmates' projects. It is never based on how many likes they receive.</p>
+  </div></div>
+
+  <div class="sect"><div class="card">
+    <h3>How we keep scoring fair</h3>
+    <ul>
+      <li><b>Evidence first:</b> every skill score is anchored to a video or document you can see yourself — ask us, and we'll show you exactly what a score was based on.</li>
+      <li><b>Anchor calibration:</b> teachers regularly re-check their scoring against reference examples so a "4" means the same thing every month.</li>
+      <li><b>Shown, not narrated:</b> we score what the video demonstrates, not how confidently a child speaks. Re-recordings, voiceovers and captions are always allowed.</li>
+      <li><b>Fail clips are rewarded:</b> showing something that broke — and the fix — earns problem-solving marks. We teach that debugging is engineering, not failure.</li>
+      <li><b>Questions welcome:</b> if any score puzzles you, ask. A score we can't explain to a parent is a score we shouldn't have given.</li>
+    </ul>
+  </div></div>
+
+  <div class="sect"><div class="card">
+    <h3>🔐 Your child's data</h3>
+    <p>What we store: lesson progress and quiz scores, teacher rubric scores and comments, your child's own Mission Log answers, project documents, competition scores, and badges/XP. Build videos live in the members-only class group — visible to enrolled families and teaching staff only, never public unless you separately consent.</p>
+    <ul>
+      <li>Your private parent link shows only your own child's progress (first name only, no contact details).</li>
+      <li>You may ask at any time what we hold, ask for corrections, or ask for videos/photos to be removed.</li>
+      <li>Records are kept for the duration of enrollment plus a fixed period stated on your consent form, then deleted.</li>
+    </ul>
+  </div></div>
+</body>
+</html>

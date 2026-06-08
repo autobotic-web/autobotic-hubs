@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMCC Arena Portal</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:transparent}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#fff;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden}
+
+  h1{font-size:clamp(22px,4.5vw,38px);font-weight:900;letter-spacing:1px;text-align:center;
+    background:linear-gradient(90deg,#7df9ff,#c084fc,#ffd64a,#7df9ff);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:hue 6s linear infinite}
+  @keyframes hue{to{background-position:300% 0}}
+
+  .tag{color:#eceaff;font-size:14.5px;text-align:center;max-width:440px;line-height:1.6;
+    background:rgba(13,10,30,.88);padding:12px 20px;border-radius:16px;
+    border:1px solid rgba(124,249,255,.35);box-shadow:0 0 18px rgba(124,249,255,.15)}
+  .tag b{color:#ffd64a}
+
+  .portal-link{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .scene{position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center}
+
+  /* sonar pulses */
+  .pulse{position:absolute;inset:22px;border-radius:50%;border:2px solid rgba(125,249,255,.55);
+    animation:pulse 3s ease-out infinite}
+  .pulse:nth-child(2){animation-delay:1.5s}
+  @keyframes pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.45);opacity:0}}
+
+  /* spinning energy ring (stargate) */
+  .ring{position:absolute;inset:18px;border-radius:50%;
+    background:conic-gradient(#7df9ff,#c084fc,#ff6ec7,#ffd64a,#34d399,#7df9ff);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+    animation:spin 5s linear infinite;
+    filter:drop-shadow(0 0 14px rgba(124,249,255,.55))}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* checkered finish-line ribbon */
+  .ribbon{position:absolute;inset:34px;border-radius:50%;
+    background:repeating-conic-gradient(#fff 0 9deg,#0c0a1e 9deg 18deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+    opacity:.8;animation:spin 14s linear infinite reverse}
+
+  /* nebula core */
+  .core{position:absolute;inset:44px;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;
+    background:radial-gradient(circle at 35% 30%, #3b2a6b 0%, #1d1235 55%, #0c0a1e 100%);
+    box-shadow:inset 0 0 28px rgba(124,249,255,.25), 0 0 30px rgba(192,132,252,.35);
+    animation:breathe 3.8s ease-in-out infinite}
+  @keyframes breathe{50%{box-shadow:inset 0 0 40px rgba(124,249,255,.45), 0 0 46px rgba(192,132,252,.6)}}
+  .core .bot{font-size:52px;line-height:1;animation:bob 3.2s ease-in-out infinite;
+    filter:drop-shadow(0 0 10px rgba(124,249,255,.8))}
+  @keyframes bob{50%{transform:translateY(-7px)}}
+  .core .word{font-weight:900;font-size:17px;letter-spacing:4px;color:#ffe27a;
+    text-shadow:0 0 12px rgba(255,214,74,.8)}
+
+  /* orbiting sparks */
+  .orbit{position:absolute;inset:0;animation:spin 7s linear infinite}
+  .orbit.o2{animation-duration:11s;animation-direction:reverse}
+  .orbit.o3{animation-duration:9s}
+  .orbit i{position:absolute;top:6px;left:50%;width:10px;height:10px;border-radius:50%;
+    transform:translateX(-50%)}
+  .orbit.o1 i{background:#7df9ff;box-shadow:0 0 12px #7df9ff}
+  .orbit.o2 i{background:#ffd64a;box-shadow:0 0 12px #ffd64a;top:auto;bottom:14px}
+  .orbit.o3 i{background:#ff6ec7;box-shadow:0 0 12px #ff6ec7;top:26px;left:12%}
+
+  /* hover: power up */
+  .portal-link:hover .ring{animation-duration:1.2s;filter:drop-shadow(0 0 26px rgba(124,249,255,.95))}
+  .portal-link:hover .scene{transform:scale(1.05)}
+  .scene{transition:transform .25s ease}
+  .portal-link:hover .cta{letter-spacing:2px;color:#fff}
+
+  .cta{color:#7df9ff;font-weight:800;font-size:17px;text-align:center;transition:all .25s;
+    background:rgba(13,10,30,.88);padding:10px 22px;border-radius:999px;
+    border:1px solid rgba(124,249,255,.35)}
+
+  .back{color:#c3caff;font-weight:700;font-size:14px;text-decoration:none;text-align:center;
+    background:rgba(13,10,30,.88);padding:8px 18px;border-radius:999px;
+    border:1px solid rgba(91,99,184,.7);transition:all .25s}
+  .back:hover{color:#fff;border-color:#7df9ff}
+</style>
+</head>
+<body>
+  <!-- ====== URLs already set — nothing to edit ====== -->
+  <script>
+    var IMCC_URL = "https://www.autoboticedu.com/intermediate-imcc-quiz";
+    var DASH_URL = "https://www.autoboticedu.com/intermediate-dashboard";
+  </script>
+
+  <h1>🏁 The IMCC Arena</h1>
+  <p class="tag"><b>9 missions.</b> Robots that follow lines, dodge walls and rescue balls.<br>
+    Your build is 90 points — the quiz is your last 10. <b>One champion.</b></p>
+
+  <a class="portal-link" id="portalLink" href="#" target="_blank" rel="noopener" aria-label="Enter the IMCC Arena">
+    <div class="scene">
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+      <div class="ring"></div>
+      <div class="ribbon"></div>
+      <div class="core">
+        <span class="bot">🤖</span>
+        <span class="word">IMCC</span>
+      </div>
+      <div class="orbit o1"><i></i></div>
+      <div class="orbit o2"><i></i></div>
+      <div class="orbit o3"><i></i></div>
+    </div>
+    <div class="cta">Step into the Arena →</div>
+  </a>
+
+  <a class="back" id="backLink" href="#" target="_blank" rel="noopener">📊 My Progress</a>
+
+  <script>
+    // Native links with target="_blank" — same mechanism as the lesson coins,
+    // which the Wix embed sandbox reliably allows to open a new tab.
+    document.getElementById('portalLink').href=IMCC_URL;
+    document.getElementById('backLink').href=DASH_URL;
+  </script>
+</body>
+</html>

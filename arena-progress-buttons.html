@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMCC Arena & My Progress</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:transparent}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#fff;min-height:100vh;
+    display:flex;align-items:center;justify-content:center;padding:18px;overflow:hidden}
+
+  .row{display:flex;gap:46px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:14px;width:330px;max-width:100%}
+
+  h2{font-size:clamp(20px,3.5vw,30px);font-weight:900;letter-spacing:1px;text-align:center;
+    background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:hue 6s linear infinite}
+  .col.imcc h2{background-image:linear-gradient(90deg,#7df9ff,#c084fc,#ffd64a,#7df9ff)}
+  .col.prog h2{background-image:linear-gradient(90deg,#ffd64a,#34d399,#7df9ff,#ffd64a)}
+  @keyframes hue{to{background-position:300% 0}}
+
+  .tag{color:#eceaff;font-size:13.5px;text-align:center;line-height:1.55;
+    background:rgba(13,10,30,.88);padding:10px 16px;border-radius:14px}
+  .col.imcc .tag{border:1px solid rgba(124,249,255,.35);box-shadow:0 0 18px rgba(124,249,255,.15)}
+  .col.prog .tag{border:1px solid rgba(52,211,153,.4);box-shadow:0 0 18px rgba(52,211,153,.15)}
+  .tag b{color:#ffd64a}
+
+  .go{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .scene{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;
+    transition:transform .25s ease}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* --- IMCC portal --- */
+  .pulse{position:absolute;inset:20px;border-radius:50%;border:2px solid rgba(125,249,255,.55);
+    animation:pulse 3s ease-out infinite}
+  .pulse:nth-child(2){animation-delay:1.5s}
+  @keyframes pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.45);opacity:0}}
+  .ring{position:absolute;inset:16px;border-radius:50%;
+    background:conic-gradient(#7df9ff,#c084fc,#ff6ec7,#ffd64a,#34d399,#7df9ff);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));
+    animation:spin 5s linear infinite;filter:drop-shadow(0 0 14px rgba(124,249,255,.55))}
+  .ribbon{position:absolute;inset:31px;border-radius:50%;
+    background:repeating-conic-gradient(#fff 0 9deg,#0c0a1e 9deg 18deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+    opacity:.8;animation:spin 14s linear infinite reverse}
+  .core{position:absolute;inset:40px;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;animation:breathe 3.8s ease-in-out infinite}
+  .col.imcc .core{background:radial-gradient(circle at 35% 30%, #3b2a6b 0%, #1d1235 55%, #0c0a1e 100%);
+    box-shadow:inset 0 0 26px rgba(124,249,255,.25), 0 0 28px rgba(192,132,252,.35)}
+  @keyframes breathe{50%{filter:brightness(1.18)}}
+  .core .glyph{font-size:46px;line-height:1;animation:bob 3.2s ease-in-out infinite}
+  .col.imcc .glyph{filter:drop-shadow(0 0 10px rgba(124,249,255,.8))}
+  @keyframes bob{50%{transform:translateY(-7px)}}
+  .core .word{font-weight:900;font-size:14px;letter-spacing:3px}
+  .col.imcc .word{color:#ffe27a;text-shadow:0 0 12px rgba(255,214,74,.8)}
+  .orbit{position:absolute;inset:0;animation:spin 7s linear infinite}
+  .orbit.o2{animation-duration:11s;animation-direction:reverse}
+  .orbit.o3{animation-duration:9s}
+  .orbit i{position:absolute;top:5px;left:50%;width:9px;height:9px;border-radius:50%;transform:translateX(-50%)}
+  .orbit.o1 i{background:#7df9ff;box-shadow:0 0 12px #7df9ff}
+  .orbit.o2 i{background:#ffd64a;box-shadow:0 0 12px #ffd64a;top:auto;bottom:12px}
+  .orbit.o3 i{background:#ff6ec7;box-shadow:0 0 12px #ff6ec7;top:24px;left:12%}
+
+  /* --- Progress arc --- */
+  .arc{position:absolute;inset:16px;border-radius:50%;
+    background:conic-gradient(#ffd64a 0 28%, #34d399 28% 52%, rgba(255,255,255,.12) 52% 100%);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 11px),#000 calc(100% - 10px));
+    animation:spin 9s linear infinite;filter:drop-shadow(0 0 14px rgba(52,211,153,.5))}
+  .ticks{position:absolute;inset:31px;border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,255,255,.7) 0 2deg, transparent 2deg 30deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+    opacity:.7;animation:spin 22s linear infinite reverse}
+  .col.prog .core{background:radial-gradient(circle at 35% 30%, #14532d 0%, #0f2c3f 55%, #0c0a1e 100%);
+    box-shadow:inset 0 0 26px rgba(52,211,153,.25), 0 0 28px rgba(255,214,74,.3)}
+  .col.prog .glyph{filter:drop-shadow(0 0 10px rgba(255,214,74,.8));animation-name:lift}
+  @keyframes lift{50%{transform:translateY(-8px) rotate(4deg)}}
+  .col.prog .word{color:#a7f3d0;text-shadow:0 0 12px rgba(52,211,153,.8)}
+  .spark{position:absolute;bottom:16px;font-size:14px;animation:rise 4s linear infinite;opacity:0}
+  .spark.s1{left:24%}
+  .spark.s2{left:50%;animation-delay:1.4s}
+  .spark.s3{left:72%;animation-delay:2.6s}
+  @keyframes rise{0%{transform:translateY(0) scale(.7);opacity:0}
+    15%{opacity:1}70%{opacity:.9}100%{transform:translateY(-175px) scale(1.15);opacity:0}}
+
+  /* hover */
+  .col.imcc .go:hover .ring{animation-duration:1.2s;filter:drop-shadow(0 0 26px rgba(124,249,255,.95))}
+  .col.prog .go:hover .arc{animation-duration:2.5s;filter:drop-shadow(0 0 26px rgba(52,211,153,.95))}
+  .go:hover .scene{transform:scale(1.05)}
+  .go:hover .cta{letter-spacing:2px;color:#fff}
+
+  .cta{font-weight:800;font-size:16px;text-align:center;transition:all .25s;
+    background:rgba(13,10,30,.88);padding:9px 20px;border-radius:999px}
+  .col.imcc .cta{color:#7df9ff;border:1px solid rgba(124,249,255,.35)}
+  .col.prog .cta{color:#a7f3d0;border:1px solid rgba(52,211,153,.4)}
+</style>
+</head>
+<body>
+  <!-- ====== URLs (both verified live) ====== -->
+  <script>
+    var IMCC_URL = "https://www.autoboticedu.com/intermediate-imcc-quiz";
+    var DASH_URL = "https://www.autoboticedu.com/intermediate-dashboard";
+  </script>
+
+  <div class="row">
+    <div class="col imcc">
+      <h2>🏁 The IMCC Arena</h2>
+      <p class="tag"><b>9 missions.</b> Robots that follow lines, dodge walls and rescue balls.
+        Your build is 90 points — the quiz is your last 10. <b>One champion.</b></p>
+      <a class="go" data-url="imcc" href="#" rel="noopener" aria-label="Enter the IMCC Arena">
+        <div class="scene">
+          <div class="pulse"></div>
+          <div class="pulse"></div>
+          <div class="ring"></div>
+          <div class="ribbon"></div>
+          <div class="core"><span class="glyph">🤖</span><span class="word">IMCC</span></div>
+          <div class="orbit o1"><i></i></div>
+          <div class="orbit o2"><i></i></div>
+          <div class="orbit o3"><i></i></div>
+        </div>
+        <div class="cta">Step into the Arena →</div>
+      </a>
+    </div>
+
+    <div class="col prog">
+      <h2>📊 My Progress</h2>
+      <p class="tag">Your whole journey on one page — <b>XP</b>, badges, quiz scores,
+        <b>IMCC missions</b> and your project.</p>
+      <a class="go" data-url="dash" href="#" rel="noopener" aria-label="Open my progress dashboard">
+        <div class="scene">
+          <div class="arc"></div>
+          <div class="ticks"></div>
+          <div class="core"><span class="glyph">🚀</span><span class="word">LEVEL UP</span></div>
+          <span class="spark s1">✨</span>
+          <span class="spark s2">⭐</span>
+          <span class="spark s3">✨</span>
+        </div>
+        <div class="cta">Open my dashboard →</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('a.go').forEach(function(a){
+      var url = a.getAttribute('data-url')==='imcc' ? IMCC_URL : DASH_URL;
+      a.href = url;
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        var w=window.open(url,'_blank');
+        if(!w){ try{ if(window.top&&window.top.location){ window.top.location.href=url; } }catch(err){ window.location.href=url; } }
+      });
+    });
+  </script>
+</body>
+</html>

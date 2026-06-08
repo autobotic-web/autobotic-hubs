@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMCC Score Summary</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
+    background:radial-gradient(1200px 700px at 50% -10%, #2a1d5e 0%, #1a1238 45%, #0b1026 100%)}
+  header{text-align:center;padding:14px 12px 4px}
+  header h2{font-size:clamp(24px,4.5vw,40px);font-weight:800;
+    background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin-top:6px;color:#cfd2f0;font-size:13.5px;max-width:580px;margin-left:auto;margin-right:auto}
+  .overall{text-align:center;margin:12px 0 4px;color:#ffe27a;font-weight:800;font-size:17px}
+  .wrap{max-width:680px;margin:10px auto 24px;padding:0 14px}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:#161a3a;border-radius:14px;overflow:hidden}
+  th,td{border:1px solid #2c3163;padding:8px 10px;text-align:center}
+  th{background:#1d2250;color:#ffd64a;font-size:12.5px}
+  td:first-child,th:first-child{text-align:left}
+  td.miss{color:#6e74b0;font-style:italic}
+  td.tot{font-weight:800;color:#5eead4}
+  .legend{text-align:center;color:#9fa6dd;font-size:12px;margin-top:8px}
+  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px}
+</style>
+</head>
+<body>
+  <header>
+    <h2>🏁 IMCC Score Summary</h2>
+    <p>Per mission: <b>practical rubric 90 pts + quiz 10 pts = 100</b>. Quiz points = your best quiz score ÷ 10 (3 attempts). Practical points are scored by your teacher using the official IMCC rubric.</p>
+  </header>
+  <div class="overall" id="overall"></div>
+  <div class="wrap" id="wrap"><div class="empty">Loading…</div></div>
+  <p class="legend" id="legend"></p>
+
+<script>
+  const NAMES={m1:'1 · Line Following',m2:'2 · Line & Green Marker',m3:'3 · Obstacle Avoidance',
+    m4:'4 · IMU Ramp & Red Stop',m51:'5.1 · Silver Plate',m52:'5.2 · Balls Detection',
+    m53:'5.3 · Pick Up Mechanism',m54:'5.4 · Place Ball in Zones',m55:'5.5 · Exit Zone'};
+  const ORDER=['m1','m2','m3','m4','m51','m52','m53','m54','m55'];
+
+  function render(d){
+    const wrap=document.getElementById('wrap');
+    let rows='', totSum=0, totN=0;
+    ORDER.forEach(m=>{
+      const s=(d.missions&&d.missions[m])||{};
+      const q=(s.quizScore===null||s.quizScore===undefined)?null:Number(s.quizScore);
+      const p=(s.practicalScore===null||s.practicalScore===undefined)?null:Number(s.practicalScore);
+      const qPts=(q===null)?null:Math.round(q/10);   // quiz % → points out of 10
+      let tot=null;
+      // mission total only once the practical (90 pts) is scored — quiz-only would
+      // misleadingly show as a near-zero total
+      if(p!==null){ tot=p+(qPts||0); totSum+=tot; totN++; }
+      rows+='<tr><td>'+NAMES[m]+'</td>'+
+        '<td'+(p===null?' class="miss"':'')+'>'+(p===null?'—':p+'/90')+'</td>'+
+        '<td'+(q===null?' class="miss"':'')+'>'+(q===null?'—':qPts+'/10 ('+q+'%)')+'</td>'+
+        '<td'+(tot===null?' class="miss"':' class="tot"')+'>'+(tot===null?'—':tot+'/100')+'</td></tr>';
+    });
+    wrap.innerHTML='<table><tr><th>Mission</th><th>Practical (90 pts)</th><th>Quiz (10 pts)</th><th>Total (100)</th></tr>'+rows+'</table>';
+    document.getElementById('overall').textContent = totN
+      ? '🏆 Overall IMCC score: '+Math.round(totSum/totN)+'/100 average · '+totN+' of 9 missions scored'
+      : 'No IMCC scores yet — take your first mission quiz!';
+    document.getElementById('legend').textContent='— means not yet attempted/scored. A mission total appears once your teacher scores the practical run.';
+  }
+
+  window.addEventListener('message',(e)=>{ const d=e.data;
+    if(d && d.source==='imcc-state'){
+      if(d.error){ document.getElementById('wrap').innerHTML='<div class="empty">Could not load IMCC scores.</div>'; return; }
+      render(d);
+    } });
+</script>
+</body>
+</html>

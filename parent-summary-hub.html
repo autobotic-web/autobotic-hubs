@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Update</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
+    background:radial-gradient(1200px 700px at 50% -10%, #2a1d5e 0%, #1a1238 45%, #0b1026 100%)}
+  header{text-align:center;padding:18px 12px 4px}
+  header h2{font-size:clamp(28px,5vw,52px);font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin-top:8px;color:#cfd2f0;font-size:clamp(13px,2vw,17px);max-width:640px;margin-left:auto;margin-right:auto}
+  .totals{margin-top:10px;color:#ffe27a;font-weight:800;font-size:15px}
+  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px}
+  .actions button,.actions a{cursor:pointer;border:0;border-radius:999px;padding:11px 22px;font-weight:800;font-size:14px;
+    font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .12s, filter .2s}
+  .actions button:hover,.actions a:hover{transform:translateY(-2px);filter:brightness(1.1)}
+  #copyBtn{background:linear-gradient(135deg,#34d399,#22d3ee);color:#06351f}
+  #waBtn{background:#25D366;color:#073b1c}
+  #copied{display:none;color:#a7f3d0;font-weight:700;font-size:13px;align-self:center}
+  .list{max-width:760px;margin:14px auto 30px;padding:0 14px;display:flex;flex-direction:column;gap:12px}
+  .item{background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+  .item .ico{font-size:30px;flex:none;margin-top:2px}
+  .item b{display:block;font-size:15px;margin-bottom:3px}
+  .item .what{color:#dfe2ff;font-size:14px;line-height:1.5}
+  .item .meta{margin-top:6px;font-size:12px;color:#aab0e6}
+  .item .meta .tag{display:inline-block;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.4);
+    color:#a7f3d0;border-radius:999px;padding:1px 10px;margin-right:6px;font-weight:700}
+  .item .own{margin-top:8px;padding:10px 12px;background:rgba(255,214,74,.08);border-left:3px solid #ffd64a;
+    border-radius:8px;color:#ffeebf;font-size:13.5px;line-height:1.5}
+  .item .own b{color:#ffd64a}
+  .item .own .fixline{margin-top:4px;color:#d9e2ff}
+  .empty{text-align:center;color:#aab0e6;padding:40px 16px;font-size:15px}
+</style>
+</head>
+<body>
+  <header>
+    <h2>👨‍👩‍👧 Parent Update</h2>
+    <p>What your child has actually learned — in plain language, one line per completed lesson. Use the buttons to copy or share the latest update.</p>
+    <div class="totals" id="totals"></div>
+  </header>
+  <div class="actions">
+    <button id="copyBtn" onclick="copyUpdate()">📋 Copy update</button>
+    <a id="waBtn" href="#" target="_blank" rel="noopener">💬 Share on WhatsApp</a>
+    <span id="copied">Copied!</span>
+  </div>
+  <main class="list" id="list"><div class="empty">Loading progress…</div></main>
+
+<script>
+  /* Parent-language summary per lesson: what the child CAN NOW DO, no jargon. */
+  const SUMMARIES = {
+    'lesson-1a-ai-ethics':      {ico:'🤝', what:'Learned to use AI tools responsibly — asking AI to explain, then writing answers in their own words instead of copying.'},
+    'lesson-1b-pi-setup':       {ico:'🖥️', what:'Set up a real computer from scratch — installed the operating system and configured a Raspberry Pi on their own.'},
+    'lesson-2-linux-cli':       {ico:'⌨️', what:'Learned to control a computer by typing commands — the same way professional engineers work every day.'},
+    'lesson-3-python-basics':   {ico:'🐍', what:'Wrote their first real Python programs — the same language used by professional AI engineers.'},
+    'lesson-4-blink-led':       {ico:'💡', what:'Wrote a Python program that controls a physical light — and practised finding and fixing code errors on their own.'},
+    'lesson-5-buzzer':          {ico:'🔊', what:'Programmed sound from code, learning how electronic signals turn into tones.'},
+    'lesson-6-button-matrix':   {ico:'🔘', what:'Made a program that reacts to button presses — how keyboards and keypads really work inside.'},
+    'lesson-7-ldr':             {ico:'🌗', what:'Built a light sensor program that detects light and dark — the trick behind automatic night lights.'},
+    'lesson-8-pir-motion':      {ico:'🚶', what:'Built a motion detector — the same technology in home security systems.'},
+    'lesson-9-vibration':       {ico:'📳', what:'Programmed a vibration motor and connected it to a sensor — like a phone’s silent-mode alert.'},
+    'lesson-10-sound':          {ico:'👏', what:'Made the computer respond to sounds like a clap — a step toward voice-activated gadgets.'},
+    'lesson-11-7segment':       {ico:'🔢', what:'Displayed numbers on a real digital display, like a clock or scoreboard.'},
+    'lesson-12-led-matrix':     {ico:'✨', what:'Created patterns and animations on a grid of 64 lights — mini billboard programming.'},
+    'lesson-13-lcd1602':        {ico:'📟', what:'Wrote messages to a real LCD screen — the kind used in vending machines and appliances.'},
+    'lesson-14-ws2812b':        {ico:'🌈', what:'Programmed individually-controlled colour LEDs with custom effects — real ambient-lighting engineering.'},
+    'lesson-15-ultrasonic':     {ico:'📏', what:'Measured distance with sound waves, the way robots and cars detect obstacles.'},
+    'lesson-16-color-sensor':   {ico:'🎨', what:'Used a colour sensor to tell surfaces apart — the technology inside sorting machines.'},
+    'lesson-17-servo':          {ico:'🦾', what:'Controlled a motor to exact angles — the building block of robot arms and grippers.'},
+    'lesson-18-dc-motor':       {ico:'🚗', what:'Drove real motors forward, backward and turning — their robot can now move.'},
+    'lesson-19-opencv-camera':  {ico:'👁️', what:'Gave a computer the ability to SEE — detecting colours, faces and even reading text through a camera, with real AI tools.'},
+    'lesson-20-hsv-tracker':    {ico:'🎯', what:'Tuned a live computer-vision system to track any chosen colour — hands-on AI engineering.'},
+    'lesson-21-object-following':{ico:'🤖', what:'Built and programmed a robot that follows objects using a camera — combining everything: code, motors and AI vision.'}
+  };
+  const BADGE_NOTES = {
+    quizmaster:'got every quiz right on the first try', speed:'finished ahead of the time goal',
+    puzzler:'solved every puzzle', firstrun:'ran real code', finisher:'completed the full mission'
+  };
+  const TITLES_FALLBACK = (id)=> (id||'').replace(/^lesson-/,'Lesson ').replace(/-/g,' ');
+
+  let latestText = '';
+  function fmtDate(d){ try{ const x=new Date(d); if(isNaN(x)) return ''; return x.toLocaleDateString(undefined,{day:'numeric',month:'short'});}catch(e){return ''} }
+
+  function render(payload){
+    const lessons=(payload.lessons||[]).filter(l=>l.finished);
+    lessons.sort((a,b)=> new Date(b.updatedAt||0) - new Date(a.updatedAt||0));
+    const name = payload.name || '';
+    const totals=document.getElementById('totals');
+    totals.textContent = (name? name+' · ':'') + lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
+    const list=document.getElementById('list'); list.innerHTML='';
+    if(!lessons.length){ list.innerHTML='<div class="empty">No completed lessons yet — the first update will appear after the first finished mission! 🚀</div>'; return; }
+    const lines=[];
+    lessons.forEach(l=>{
+      const s=(l.lessonId||'').indexOf('best-video-')===0
+        ? {ico:'🏆', what:'Voted Best Video of the Month by their classmates — bonus +100 XP. A proud moment!'}
+        : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
+      const title=l.lessonTitle||TITLES_FALLBACK(l.lessonId);
+      const notes=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
+      if(Number(l.videoXp)>0) notes.push('🎬 build video reviewed by teacher · +'+l.videoXp+' XP'+(l.videoNote?' — “'+l.videoNote+'”':''));
+      // Teacher's skill breakdown from the video rubric (5 skills, 0-6 each)
+      let rub=null; try{ rub = l.videoRubric ? JSON.parse(l.videoRubric) : null; }catch(e){}
+      if(rub){
+        const RL={presentation:'🎤 Presentation',hardware:'🔌 Hardware',coding:'💻 Coding',problem:'🐛 Problem-solving',creativity:'✨ Creativity'};
+        const parts=Object.keys(RL).filter(k=>rub[k]!==undefined).map(k=>RL[k]+' '+rub[k]+'/6');
+        if(parts.length) notes.push('Skills: '+parts.join(' · '));
+      }
+      // Mission Log: the student's own Built/Broke/Fixed/Next answers, if saved in the lesson.
+      let ml=null; try{ ml = l.missionLog ? JSON.parse(l.missionLog) : null; }catch(e){ ml=null; }
+      const esc=(x)=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      let own='';
+      if(ml && (ml.built||ml.fixed||ml.broke)){
+        own='<div class="own">💬 <b>In their own words:</b>'+
+          (ml.built?'<div>“'+esc(ml.built)+'”</div>':'')+
+          (ml.broke||ml.fixed?'<div class="fixline">'+(ml.broke?'It broke: “'+esc(ml.broke)+'” — ':'')+(ml.fixed?'fixed it: “'+esc(ml.fixed)+'”':'')+'</div>':'')+
+          '</div>';
+      }
+      const d=document.createElement('div'); d.className='item';
+      d.innerHTML='<div class="ico">'+s.ico+'</div><div><b>'+title+'</b><div class="what">'+s.what+'</div>'+own+
+        '<div class="meta">'+notes.map(n=>'<span class="tag">'+n+'</span>').join('')+(fmtDate(l.updatedAt)?'<span>'+fmtDate(l.updatedAt)+'</span>':'')+'</div></div>';
+      list.appendChild(d);
+      lines.push('• '+title+': '+(ml&&ml.built? '"'+ml.built+'"' : s.what)+(notes.length?' ('+notes.join(', ')+')':''));
+    });
+    const intro=(name?name:'Your child')+' — progress update from AI & Robotics class:';
+    latestText=intro+'\n\n'+lines.slice(0,3).join('\n')+'\n\nTotal: '+lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP 🚀';
+    const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);
+  }
+
+  function copyUpdate(){
+    if(!latestText) return;
+    const done=()=>{const c=document.getElementById('copied');c.style.display='inline';setTimeout(()=>c.style.display='none',1600);};
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(latestText).then(done).catch(()=>fallback(done)); }
+    else fallback(done);
+    function fallback(cb){ const ta=document.createElement('textarea');ta.value=latestText;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}ta.remove();cb(); }
+  }
+
+  window.addEventListener('message',(e)=>{ const d=e.data;
+    if(d && d.source==='parent-summary'){
+      if(d.parentLink && !document.getElementById('plnote')){
+        const n=document.createElement('p'); n.id='plnote';
+        n.style.cssText='max-width:640px;margin:4px auto 14px;text-align:center;color:#9fa6dd;font-size:12px;padding:0 14px';
+        n.textContent='🔒 This private page is for your family. Anyone with the link can view it — please keep it to yourselves, and ask the centre any time to issue a fresh link (the old one stops working).';
+        document.querySelector('header').appendChild(n);
+      }
+      if(d.error){
+        document.getElementById('totals').textContent='';
+        document.getElementById('list').innerHTML='<div class="empty">🔒 This parent link isn’t valid (it may have been renewed). Please ask the centre for your new link.</div>';
+        return;
+      }
+      render(d);
+    } });
+</script>
+</body>
+</html>
