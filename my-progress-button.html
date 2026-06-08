@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Progress</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:transparent}
+  body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#fff;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden}
+
+  h1{font-size:clamp(22px,4.5vw,38px);font-weight:900;letter-spacing:1px;text-align:center;
+    background:linear-gradient(90deg,#ffd64a,#34d399,#7df9ff,#ffd64a);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:hue 6s linear infinite}
+  @keyframes hue{to{background-position:300% 0}}
+
+  .tag{color:#eceaff;font-size:14.5px;text-align:center;max-width:440px;line-height:1.6;
+    background:rgba(13,10,30,.88);padding:12px 20px;border-radius:16px;
+    border:1px solid rgba(52,211,153,.4);box-shadow:0 0 18px rgba(52,211,153,.15)}
+  .tag b{color:#ffd64a}
+
+  .prog-link{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .scene{position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center;
+    transition:transform .25s ease}
+
+  /* sweeping progress arc */
+  .arc{position:absolute;inset:18px;border-radius:50%;
+    background:conic-gradient(#ffd64a 0 28%, #34d399 28% 52%, rgba(255,255,255,.12) 52% 100%);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+    animation:spin 9s linear infinite;
+    filter:drop-shadow(0 0 14px rgba(52,211,153,.5))}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* tick ring — like a clock of milestones */
+  .ticks{position:absolute;inset:34px;border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,255,255,.7) 0 2deg, transparent 2deg 30deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+    opacity:.7;animation:spin 22s linear infinite reverse}
+
+  /* nebula core */
+  .core{position:absolute;inset:44px;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;
+    background:radial-gradient(circle at 35% 30%, #14532d 0%, #0f2c3f 55%, #0c0a1e 100%);
+    box-shadow:inset 0 0 28px rgba(52,211,153,.25), 0 0 30px rgba(255,214,74,.3);
+    animation:breathe 3.8s ease-in-out infinite}
+  @keyframes breathe{50%{box-shadow:inset 0 0 40px rgba(52,211,153,.45), 0 0 46px rgba(255,214,74,.5)}}
+  .core .rocket{font-size:50px;line-height:1;animation:lift 3.2s ease-in-out infinite;
+    filter:drop-shadow(0 0 10px rgba(255,214,74,.8))}
+  @keyframes lift{50%{transform:translateY(-8px) rotate(4deg)}}
+  .core .word{font-weight:900;font-size:15px;letter-spacing:3px;color:#a7f3d0;
+    text-shadow:0 0 12px rgba(52,211,153,.8)}
+
+  /* rising sparkles */
+  .spark{position:absolute;bottom:18px;font-size:15px;animation:rise 4s linear infinite;opacity:0}
+  .spark.s1{left:24%;animation-delay:0s}
+  .spark.s2{left:50%;animation-delay:1.4s}
+  .spark.s3{left:72%;animation-delay:2.6s}
+  @keyframes rise{0%{transform:translateY(0) scale(.7);opacity:0}
+    15%{opacity:1}70%{opacity:.9}100%{transform:translateY(-190px) scale(1.15);opacity:0}}
+
+  .prog-link:hover .arc{animation-duration:2.5s;filter:drop-shadow(0 0 26px rgba(52,211,153,.95))}
+  .prog-link:hover .scene{transform:scale(1.05)}
+  .prog-link:hover .cta{letter-spacing:2px;color:#fff}
+
+  .cta{color:#a7f3d0;font-weight:800;font-size:17px;text-align:center;transition:all .25s;
+    background:rgba(13,10,30,.88);padding:10px 22px;border-radius:999px;
+    border:1px solid rgba(52,211,153,.4)}
+</style>
+</head>
+<body>
+  <!-- ====== URL is already set to the live dashboard — edit only if it changes ====== -->
+  <script>
+    var DASH_URL = "https://www.autoboticedu.com/intermediate-dashboard";
+  </script>
+
+  <h1>📊 My Progress</h1>
+  <p class="tag">Your whole journey on one page — <b>XP</b>, badges, quiz scores,
+    <b>IMCC missions</b> and your project. How far have you come?</p>
+
+  <a class="prog-link" id="progLink" href="#" rel="noopener" aria-label="Open my progress dashboard">
+    <div class="scene">
+      <div class="arc"></div>
+      <div class="ticks"></div>
+      <div class="core">
+        <span class="rocket">🚀</span>
+        <span class="word">LEVEL UP</span>
+      </div>
+      <span class="spark s1">✨</span>
+      <span class="spark s2">⭐</span>
+      <span class="spark s3">✨</span>
+    </div>
+    <div class="cta">Open my dashboard →</div>
+  </a>
+
+  <script>
+    var link=document.getElementById('progLink');
+    link.href=DASH_URL;
+    link.addEventListener('click',function(e){
+      e.preventDefault();
+      var w=window.open(DASH_URL,'_blank');
+      if(!w){ try{ if(window.top&&window.top.location){ window.top.location.href=DASH_URL; } }catch(err){ window.location.href=DASH_URL; } }
+    });
+  </script>
+</body>
+</html>
