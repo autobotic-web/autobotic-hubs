@@ -104,6 +104,7 @@
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 0">
       <input type="month" id="voteMonth" style="padding:9px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit">
       <button id="closeBtn" onclick="closeMonth()" style="cursor:pointer;border:0;border-radius:999px;padding:10px 20px;font-weight:800;font-size:14px;font-family:inherit;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3b2600">🏆 Tally votes &amp; award +100 XP</button>
+      <button id="reopenBtn" onclick="reopenMonth()" style="cursor:pointer;border:2px solid #f87171;border-radius:999px;padding:9px 16px;font-weight:800;font-size:13px;font-family:inherit;background:transparent;color:#fca5a5">↩ Undo tally &amp; re-open voting</button>
       <span id="closeResult" style="font-weight:700;font-size:14px;color:#a7f3d0"></span>
     </div>
     <p class="hint" style="padding-bottom:8px">Tallies the month's secret votes, awards the winner(s) a +100 XP bonus row and the 🏆 badge (ties → all winners). Safe to re-run: a student is never awarded twice for the same month. Announce the winner in the Intermediate Group / at Showcase Day!</p>
@@ -508,6 +509,15 @@
     document.getElementById('closeResult').textContent='Tallying…';
     parent.postMessage({source:'close-month', month:m}, '*');
   }
+  function reopenMonth(){
+    const m=document.getElementById('voteMonth').value;
+    if(!window.confirm('Undo the tally for '+(m||'this month')+'?\n\nThis removes the winner\'s +100 XP and 🏆 badge and re-opens voting. Votes are kept, so you can tally again. Best done BEFORE you announce the winner.')) return;
+    document.getElementById('reopenBtn').disabled=true;
+    document.getElementById('closeResult').style.color='#fde68a';
+    document.getElementById('closeResult').textContent='Re-opening…';
+    document.getElementById('announceBox').style.display='none';
+    parent.postMessage({source:'reopen-month', month:m}, '*');
+  }
   (function(){ const now=new Date();
     document.getElementById('voteMonth').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'); })();
 
@@ -598,6 +608,14 @@
         box.style.display='block';
       } else { el.style.color='#fecdd3'; el.textContent='⛔ '+(d.error==='no-votes'?'No votes recorded for that month.':(d.error||'failed'));
         document.getElementById('announceBox').style.display='none'; }
+    }
+    if(d && d.source==='reopen-result'){
+      const el=document.getElementById('closeResult');
+      document.getElementById('reopenBtn').disabled=false;
+      document.getElementById('closeBtn').disabled=false;
+      if(d.ok){ el.style.color='#fde68a';
+        el.textContent=d.removed?('↩ Tally undone for '+d.month+' — voting re-opened (removed '+d.removed+' award'+(d.removed===1?'':'s')+').'):('Nothing to undo for '+d.month+' — it wasn’t tallied.');
+      } else { el.style.color='#fecdd3'; el.textContent='⛔ '+(d.error||'failed'); }
     }
     if(d && d.source==='review-queue'){
       if(d.error){ document.getElementById('list').innerHTML='<div class="err">⛔ '+esc(d.error==='not-authorized'?'You are not authorized to review videos (teacher login required).':d.error)+'</div>'; return; }
