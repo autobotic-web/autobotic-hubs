@@ -23,6 +23,9 @@
   .cand:hover{transform:translateY(-3px)}
   .cand.voted{border-color:#34d399;box-shadow:0 0 22px rgba(52,211,153,.35)}
   .cand.mine{opacity:.75}
+  .cand.winner{border-color:#fbbf24;box-shadow:0 0 26px rgba(251,191,36,.5)}
+  .cand.winner.mine{opacity:1}
+  .cand .count{flex:1;text-align:center;font-weight:800;font-size:13.5px;color:#ffe27a;padding:9px 0}
   .cand b{font-size:16px}
   .cand .lesson{color:#9fd6ff;font-weight:700;font-size:13px}
   .cand .built{color:#ffeebf;font-size:13px;line-height:1.5;font-style:italic;flex:1}
@@ -59,22 +62,37 @@
 
   function render(d){
     MYVOTE=d.myVote||null;
+    const revealed=!!d.revealed;
     const pct = d.totalStudents ? Math.round(d.votedCount/d.totalStudents*100) : 0;
-    document.getElementById('tFill').style.width=pct+'%';
-    document.getElementById('tTxt').textContent='🗳 '+d.votedCount+' of '+d.totalStudents+' students have voted ('+d.month+')';
+    document.getElementById('tFill').style.width=(revealed?100:pct)+'%';
+    document.getElementById('tTxt').textContent = revealed
+      ? '🎉 Results are in for '+d.month+' — here’s how every video did!'
+      : '🗳 '+d.votedCount+' of '+d.totalStudents+' students have voted ('+d.month+')';
     const grid=document.getElementById('grid'); grid.innerHTML='';
     if(!(d.candidates||[]).length){ grid.innerHTML='<div class="empty">No reviewed videos yet this month — post yours in the Intermediate Group and get it reviewed to enter! 🎬</div>'; return; }
-    d.candidates.forEach(c=>{
+    let list=d.candidates.slice();
+    if(revealed) list.sort((a,b)=>(b.votes||0)-(a.votes||0));   // winners first
+    list.forEach(c=>{
       const el=document.createElement('div');
-      el.className='cand'+(MYVOTE===c.rowId?' voted':'')+(c.isMine?' mine':'');
+      el.className='cand'+(MYVOTE===c.rowId?' voted':'')+(c.isMine?' mine':'')+(revealed&&c.isWinner?' winner':'');
       el.dataset.rowId=c.rowId;
+      let action;
+      if(revealed){
+        const n=c.votes||0; const s=(n===1?'':'s');
+        let txt = c.isWinner ? '👑 Winner — '+n+' vote'+s : '🗳 '+n+' vote'+s;
+        if(c.isMine) txt += ' · your video 🌟';
+        action='<div class="count">'+txt+'</div>';
+      } else if(c.isMine){
+        action='<div class="minenote">This is your video 🌟</div>';
+      } else {
+        action='<button class="vote'+(MYVOTE===c.rowId?' sel':'')+'" onclick="vote(this)">'+(MYVOTE===c.rowId?'✅ Your vote':'🗳 Vote')+'</button>';
+      }
       el.innerHTML='<b>'+esc(c.memberName)+(c.isMine?' (you)':'')+'</b>'+
         '<span class="lesson">'+esc(c.lessonTitle||c.lessonId)+'</span>'+
         (c.built?'<div class="built">“'+esc(c.built)+'”</div>':'<div class="built"></div>')+
         '<div class="row">'+
         (c.link?'<a class="watch" href="'+esc(c.link)+'" target="_blank" rel="noopener">▶ Watch</a>':'<a class="watch" href="#" onclick="openShowcase(event)">▶ Intermediate Group</a>')+
-        (c.isMine?'<div class="minenote">This is your video 🌟</div>'
-                 :'<button class="vote'+(MYVOTE===c.rowId?' sel':'')+'" onclick="vote(this)">'+(MYVOTE===c.rowId?'✅ Your vote':'🗳 Vote')+'</button>')+
+        action+
         '</div>';
       grid.appendChild(el);
     });
@@ -103,7 +121,10 @@
           const b=c.querySelector('.vote'); if(b){ b.textContent=(c.dataset.rowId===MYVOTE)?'✅ Your vote':'🗳 Vote'; b.classList.toggle('sel', c.dataset.rowId===MYVOTE); }
         });
       } else if(d.error){
-        alert(d.error==='no-self-vote'?'You can’t vote for your own video 🙂':'Vote failed: '+d.error);
+        alert(d.error==='no-self-vote'?'You can’t vote for your own video 🙂':
+              d.error==='voting-closed'?'Voting for this month is closed — the results are in! 🎉':
+              'Vote failed: '+d.error);
+        if(d.error==='voting-closed') parent.postMessage({source:'vote-reload'}, '*');
       }
     }
   });
