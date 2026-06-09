@@ -107,6 +107,11 @@
       <span id="closeResult" style="font-weight:700;font-size:14px;color:#a7f3d0"></span>
     </div>
     <p class="hint" style="padding-bottom:8px">Tallies the month's secret votes, awards the winner(s) a +100 XP bonus row and the 🏆 badge (ties → all winners). Safe to re-run: a student is never awarded twice for the same month. Announce the winner in the Intermediate Group / at Showcase Day!</p>
+    <div id="announceBox" style="display:none;padding:2px 0 8px">
+      <button id="copyAnnounceBtn" onclick="copyAnnounce()" style="cursor:pointer;border:0;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13.5px;font-family:inherit;background:#22c55e;color:#04210f">📋 Copy announcement for the group</button>
+      <span id="copyAnnounceDone" style="margin-left:8px;font-weight:700;font-size:13px;color:#a7f3d0"></span>
+      <textarea id="announceText" readonly style="display:block;width:100%;margin-top:8px;min-height:148px;padding:10px 12px;border-radius:12px;border:2px solid #33386f;background:#11142e;color:#eef0ff;font-family:inherit;font-size:13.5px;line-height:1.5;resize:vertical"></textarea>
+    </div>
   </details>
 
   <details class="guide">
@@ -189,6 +194,7 @@
   ];
   function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function fmtDate(d){ try{ const x=new Date(d); if(isNaN(x)) return ''; return x.toLocaleDateString(undefined,{day:'numeric',month:'short'});}catch(e){return ''} }
+  function fmtMonth(d){ try{ const x=new Date(d); if(isNaN(x)) return ''; return x.toLocaleDateString(undefined,{month:'short',year:'numeric'});}catch(e){return ''} }
 
   var QUEUE_ITEMS=[];
   function renderQueue(){ render(QUEUE_ITEMS); }
@@ -210,7 +216,8 @@
       const vlink = ml && ml.link ? String(ml.link) : '';
       d.innerHTML =
         '<div class="head"><span><b>'+esc(it.memberName)+'</b> <span style="color:#aab0e6;font-size:12.5px">'+esc(it.email)+'</span></span>'+
-        '<span class="lesson">'+esc(it.lessonTitle||it.lessonId)+'</span><span class="date">'+fmtDate(it.updatedAt)+'</span></div>'+
+        '<span class="lesson">'+esc(it.lessonTitle||it.lessonId)+'</span><span class="date">'+fmtDate(it.updatedAt)+'</span>'+
+        (fmtMonth(it.updatedAt)?'<span class="ym" style="display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;background:#2a2f5e;border:1px solid #5b63b8;color:#cfd2f0;font-size:11.5px;font-weight:800">📅 '+esc(fmtMonth(it.updatedAt))+'</span>':'')+'</div>'+
         (vlink
           ? '<a href="'+esc(vlink)+'" target="_blank" rel="noopener" style="display:inline-block;margin:8px 0 2px;text-decoration:none;border:0;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3b2600">▶ Watch the video (student\'s link)</a>'
           : '<div class="hint" style="margin:8px 0 2px">🔎 No link saved — find it in the Intermediate Group, titled “'+esc((it.lessonTitle||it.lessonId))+' — My Build”.</div>')+
@@ -504,6 +511,39 @@
   (function(){ const now=new Date();
     document.getElementById('voteMonth').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'); })();
 
+  function monthName(ym){ try{ var p=String(ym).split('-'); if(p.length<2) return ym;
+    return new Date(Number(p[0]),Number(p[1])-1,1).toLocaleDateString(undefined,{month:'long',year:'numeric'}); }catch(e){ return ym; } }
+  function buildAnnounce(winners, totalVotes, ym){
+    if(!winners || !winners.length) return '';
+    var mn=monthName(ym);
+    if(winners.length===1){
+      var w=winners[0], s=(w.votes===1?'':'s');
+      return '🏆 BEST VIDEO OF THE MONTH — '+mn+' 🏆\n\n'+
+        'The votes are in! Huge congratulations to '+w.memberName+' 🎉\n\n'+
+        'Your classmates voted your build video the best of the month — '+w.votes+' vote'+s+'! '+
+        'You’ve earned +100 XP and the 🏆 Best Video badge on your dashboard.\n\n'+
+        '👉 Open the Best Video page to see how every video did — your own vote count is there too. '+
+        'Thanks to everyone who filmed, shared and voted. New round starts now — get building! 🤖';
+    }
+    var names=winners.map(function(w){return w.memberName;});
+    var nameStr=names.slice(0,-1).join(', ')+' and '+names[names.length-1];
+    var v=winners[0].votes, s2=(v===1?'':'s');
+    return '🏆 BEST VIDEO OF THE MONTH — '+mn+' 🏆\n\n'+
+      'It’s a tie! 🎉 Congratulations to '+nameStr+' — all topped the vote with '+v+' vote'+s2+' each!\n\n'+
+      'You’ve each earned +100 XP and the 🏆 Best Video badge. Open the Best Video page to see all the results. '+
+      'Brilliant work, everyone — new round starts now! 🤖';
+  }
+  function copyAnnounce(){
+    var ta=document.getElementById('announceText'), done=document.getElementById('copyAnnounceDone');
+    ta.focus(); ta.select(); try{ ta.setSelectionRange(0, ta.value.length); }catch(e){}
+    var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+    if(ok){ done.textContent='Copied! Paste into the group ✓'; }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(ta.value)
+      .then(function(){ done.textContent='Copied! Paste into the group ✓'; })
+      .catch(function(){ done.textContent='Text selected — press Ctrl/Cmd+C to copy'; }); }
+    else { done.textContent='Text selected — press Ctrl/Cmd+C to copy'; }
+  }
+
   window.addEventListener('message',(e)=>{
     const d=e.data;
     if(d && d.source==='imcc-matrix'){
@@ -552,7 +592,12 @@
       document.getElementById('closeBtn').disabled=false;
       if(d.ok){ el.style.color='#a7f3d0';
         el.textContent='🏆 '+d.winners.map(w=>w.memberName+' ('+w.votes+' votes)').join(', ')+' — '+d.totalVotes+' votes cast';
-      } else { el.style.color='#fecdd3'; el.textContent='⛔ '+(d.error==='no-votes'?'No votes recorded for that month.':(d.error||'failed')); }
+        var box=document.getElementById('announceBox');
+        document.getElementById('announceText').value=buildAnnounce(d.winners||[], d.totalVotes||0, d.month||'');
+        document.getElementById('copyAnnounceDone').textContent='';
+        box.style.display='block';
+      } else { el.style.color='#fecdd3'; el.textContent='⛔ '+(d.error==='no-votes'?'No votes recorded for that month.':(d.error||'failed'));
+        document.getElementById('announceBox').style.display='none'; }
     }
     if(d && d.source==='review-queue'){
       if(d.error){ document.getElementById('list').innerHTML='<div class="err">⛔ '+esc(d.error==='not-authorized'?'You are not authorized to review videos (teacher login required).':d.error)+'</div>'; return; }
