@@ -12,8 +12,13 @@
   header h2{font-size:clamp(24px,4.5vw,40px);font-weight:800;
     background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
   header p{margin-top:6px;color:#cfd2f0;font-size:13.5px;max-width:560px;margin-left:auto;margin-right:auto}
-  .card{max-width:620px;margin:14px auto 24px;background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:18px 20px}
-  .title{font-size:17px;font-weight:800;color:#9fd6ff;margin-bottom:8px}
+  .card{max-width:620px;margin:14px auto;background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:18px 20px}
+  .card.arch{opacity:.85;border-style:dashed}
+  .toprow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .title{font-size:17px;font-weight:800;color:#9fd6ff}
+  .pill{font-size:11px;font-weight:800;border-radius:999px;padding:2px 10px}
+  .pill.act{background:rgba(52,211,153,.15);color:#a7f3d0;border:1px solid rgba(52,211,153,.5)}
+  .pill.arc{background:rgba(91,99,184,.15);color:#c3caff;border:1px solid #5b63b8}
   .row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px solid #252a55}
   .row .v{font-weight:800;color:#5eead4}
   .row .miss{color:#6e74b0;font-style:italic;font-weight:400}
@@ -23,43 +28,109 @@
   .docs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
   .doc{font-size:12px;font-weight:700;border-radius:999px;padding:3px 12px;border:1px solid #3b416f;color:#aab0e6}
   .doc.ok{border-color:rgba(52,211,153,.5);color:#a7f3d0;background:rgba(52,211,153,.1)}
-  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px}
+  .loghead{margin:12px 0 4px;font-size:13px;font-weight:800;color:#dfe2ff}
+  .logentry{background:#161a3a;border:1px solid #2c3163;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:12.5px;line-height:1.5}
+  .logentry .ld{color:#ffd64a;font-weight:800;font-size:11.5px}
+  details summary{cursor:pointer;color:#9fd6ff;font-size:12.5px;font-weight:700;margin-top:6px;outline:none}
+  .nolog{color:#6e74b0;font-style:italic;font-size:12.5px}
+  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px;line-height:1.7}
 </style>
 </head>
 <body>
+  <script>
+    /* Guardian block — keep SEPARATE from the main script so it survives a
+       corrupted paste / syntax error in the main block. */
+    (function(){
+      var box=document.createElement('div');
+      box.style.cssText='display:none;background:#7f1d1d;color:#fecaca;padding:10px 14px;border-radius:10px;'+
+        'margin:10px auto;max-width:620px;font:13px/1.5 system-ui;white-space:pre-wrap';
+      function mount(){ if(document.body) document.body.insertBefore(box,document.body.firstChild); }
+      if(document.body) mount(); else window.addEventListener('DOMContentLoaded',mount);
+      window.onerror=function(m,s,l,c){ box.style.display='block';
+        box.textContent='⛔ Script error: '+m+' (line '+l+(c?':'+c:'')+')'; return false; };
+      window.__gotData=false;
+      var ping=setInterval(function(){ if(window.__gotData){ clearInterval(ping); return; }
+        try{ parent.postMessage({source:'project-ready'},'*'); }catch(e){} },700);
+      setTimeout(function(){ if(window.__gotData) return;
+        var m=document.getElementById('cards');
+        if(m) m.innerHTML='<div class="card"><div class="empty">⛔ Not receiving data.<br>Check: ① iframe ID is <b>#projFrame</b> '+
+          '② page code pasted (page-dashboard.js) ③ site Published ④ you are logged in.</div></div>';
+      },8000);
+    })();
+  </script>
   <header>
-    <h2>🚀 My Project</h2>
-    <p>Project Rubric: Functionality /30 · Explanation /20 · Design /20 · Creativity /10 · Presentation /10 · Community engagement /10 (posting + giving feedback to classmates).</p>
+    <h2>🚀 My Projects</h2>
+    <p>Project Rubric (per project): Functionality /30 · Explanation /20 · Design /20 · Creativity /10 · Presentation /10 · Community engagement /10 (posting + giving feedback to classmates).</p>
   </header>
-  <div class="card" id="card"><div class="empty">Loading…</div></div>
+  <div id="cards"><div class="card"><div class="empty">Loading…</div></div></div>
 
 <script>
   const L=[['functionality','Functionality',30],['explanation','Explanation',20],['design','Design decisions',20],
            ['creativity','Creativity',10],['presentation','Presentation',10],['engagement','Community engagement',10]];
   function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function pj(s,fb){ try{ const v=JSON.parse(s); return v===null||v===undefined?fb:v; }catch(e){ return fb; } }
+  function fmtLogDate(d){
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));
+    if(!m) return String(d||'');
+    const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return Number(m[3])+' '+MO[Number(m[2])-1]+' '+m[1];
+  }
+  function logHtml(e){
+    return '<div class="logentry"><span class="ld">'+esc(fmtLogDate(e.date))+'</span> — '+esc(e.did||'')+
+      (e.problem?'<br><b>Problem:</b> '+esc(e.problem):'')+(e.next?'<br><b>Next:</b> '+esc(e.next):'')+'</div>';
+  }
+
+  function projectCard(p,i){
+    const det=pj(p.details,{}), plan=pj(p.plan,[]), bud=pj(p.budget,[]), log=pj(p.logsheet,[]);
+    const docs=[['Details', !!(det.title||det.solution)],['Plan', plan.length>0],['Budget', bud.length>0],['Logsheet', log.length>0]];
+    const arch=p.status==='archived';
+    let h='<div class="card'+(arch?' arch':'')+'">'+
+      '<div class="toprow"><span class="title">'+esc(det.title||('Project '+(i+1)))+'</span>'+
+      '<span class="pill '+(arch?'arc':'act')+'">'+(arch?'🔒 Archived':'🟢 Active')+'</span>'+
+      '<span style="color:#6e74b0;font-size:11.5px">Project '+(i+1)+'</span></div>'+
+      '<div class="docs">'+docs.map(x=>'<span class="doc'+(x[1]?' ok':'')+'">'+(x[1]?'✓ ':'')+x[0]+'</span>').join('')+'</div>';
+    if(p.scoreTotal!==null&&p.scoreTotal!==undefined){
+      const sp=pj(p.scoreParts,{});
+      h+=L.map(r=>'<div class="row"><span>'+r[1]+'</span><span class="v">'+
+        (sp[r[0]]!==undefined?sp[r[0]]:'<span class="miss">—</span>')+'/'+r[2]+'</span></div>').join('');
+      h+='<div class="total">🏅 '+p.scoreTotal+'/100</div>';
+      if(p.scoreNote) h+='<div class="note">💬 Teacher: “'+esc(p.scoreNote)+'”</div>';
+    } else {
+      h+='<div class="empty" style="padding:14px">Not scored yet — keep building, keep logging! Your teacher scores each project against the rubric when it\'s presented.</div>';
+    }
+    h+='<div class="loghead">📓 Logsheet ('+log.length+' '+(log.length===1?'entry':'entries')+')</div>';
+    if(!log.length){ h+='<div class="nolog">No entries yet.</div>'; }
+    else {
+      const recent=log.slice(-3).reverse();          // newest first
+      h+=recent.map(logHtml).join('');
+      const older=log.slice(0,-3).reverse();
+      if(older.length){
+        h+='<details><summary>Show '+older.length+' earlier '+(older.length===1?'entry':'entries')+'</summary>'+
+          older.map(logHtml).join('')+'</details>';
+      }
+    }
+    return h+'</div>';
+  }
 
   function render(d){
-    const card=document.getElementById('card');
-    const det=pj(d.details,{}), plan=pj(d.plan,[]), bud=pj(d.budget,[]), log=pj(d.logsheet,[]);
-    const docs=[['Details', !!(det.title||det.solution)],['Plan', plan.length>0],['Budget', bud.length>0],['Logsheet', log.length>0]];
-    let h='<div class="title">'+esc(det.title||'My engineering project')+'</div>'+
-      '<div class="docs">'+docs.map(x=>'<span class="doc'+(x[1]?' ok':'')+'">'+(x[1]?'✓ ':'')+x[0]+'</span>').join('')+'</div>';
-    if(d.scoreTotal!==null&&d.scoreTotal!==undefined){
-      const p=pj(d.scoreParts,{});
-      h+=L.map(r=>'<div class="row"><span>'+r[1]+'</span><span class="v">'+
-        (p[r[0]]!==undefined?p[r[0]]:'<span class="miss">—</span>')+'/'+r[2]+'</span></div>').join('');
-      h+='<div class="total">🏅 '+d.scoreTotal+'/100</div>';
-      if(d.scoreNote) h+='<div class="note">💬 Teacher: “'+esc(d.scoreNote)+'”</div>';
-    } else {
-      h+='<div class="empty">Not scored yet — keep building, keep logging! Your teacher scores the project against the rubric when it\'s presented.</div>';
+    const box=document.getElementById('cards');
+    let projects=d.projects;
+    if(!projects){   // legacy flat payload (old page code not yet updated)
+      projects=[{projectId:'p1',status:'active',details:d.details||'',plan:d.plan||'',budget:d.budget||'',
+        logsheet:d.logsheet||'',scoreParts:d.scoreParts||'',scoreTotal:d.scoreTotal,scoreNote:d.scoreNote||''}];
     }
-    card.innerHTML=h;
+    // active project first, then archived (newest first)
+    const act=projects.filter(p=>p.status!=='archived');
+    const arc=projects.filter(p=>p.status==='archived').reverse();
+    const idx=new Map(); projects.forEach((p,i)=>idx.set(p,i));
+    box.innerHTML=act.concat(arc).map(p=>projectCard(p,idx.get(p))).join('');
   }
 
   window.addEventListener('message',(e)=>{ const d=e.data;
     if(d && d.source==='project-data'){
-      if(d.error){ document.getElementById('card').innerHTML='<div class="empty">Could not load project.</div>'; return; }
+      window.__gotData=true;
+      if(d.error){ document.getElementById('cards').innerHTML=
+        '<div class="card"><div class="empty">Could not load your projects.</div></div>'; return; }
       render(d);
     } });
 </script>

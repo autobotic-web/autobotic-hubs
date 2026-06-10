@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Project</title>
+<title>My Projects</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#eef0ff;min-height:100vh;padding:8px;
@@ -12,6 +12,14 @@
   header h2{font-size:clamp(26px,4.5vw,44px);font-weight:800;
     background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
   header p{margin-top:6px;color:#cfd2f0;font-size:13.5px;max-width:620px;margin-left:auto;margin-right:auto}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:680px;margin:14px auto 0;padding:0 14px}
+  .tab{cursor:pointer;border:2px solid #3b416f;border-radius:999px;padding:8px 16px;font-weight:800;font-size:13px;
+    font-family:inherit;background:transparent;color:#aab0e6}
+  .tab.on{border-color:#22d3ee;color:#9fd6ff;background:rgba(34,211,238,.1)}
+  .tab.newp{border-style:dashed;color:#a7f3d0;border-color:rgba(52,211,153,.6)}
+  .robanner{max-width:680px;margin:12px auto 0;padding:0 14px}
+  .robanner .inner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(91,99,184,.15);
+    border:1px solid #5b63b8;border-radius:14px;padding:10px 16px;color:#c3caff;font-size:13px}
   .score{max-width:680px;margin:12px auto 0;padding:0 14px}
   .scorecard{background:rgba(255,214,74,.08);border:1px solid #ffd64a;border-radius:14px;padding:12px 16px;
     color:#ffeebf;font-size:13.5px;line-height:1.6}
@@ -24,8 +32,7 @@
   input[type=text],textarea{width:100%;background:#11142e;border:2px solid #3b416f;border-radius:10px;color:#eef0ff;
     font-family:inherit;font-size:13.5px;padding:9px 12px;resize:vertical;outline:none}
   input[type=text]:focus,textarea:focus{border-color:#22d3ee}
-  input[type=number]{background:#11142e;border:2px solid #3b416f;border-radius:10px;color:#eef0ff;
-    font-family:inherit;font-size:13.5px;padding:9px;width:90px;outline:none}
+  input:disabled,textarea:disabled,select:disabled{opacity:.6}
   .btn{cursor:pointer;border:0;border-radius:999px;padding:10px 22px;font-weight:800;font-size:13.5px;
     font-family:inherit;background:linear-gradient(135deg,#34d399,#22d3ee);color:#06351f;margin-top:12px}
   .btn:hover{filter:brightness(1.1)}
@@ -39,10 +46,31 @@
   .logentry{background:#161a3a;border:1px solid #2c3163;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px}
   .logentry .ld{color:#ffd64a;font-weight:800;font-size:12px}
   .rm{cursor:pointer;border:0;background:transparent;color:#fda4af;font-weight:800;font-size:13px}
-  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px}
+  .empty{text-align:center;color:#aab0e6;padding:30px;font-size:14px;line-height:1.7}
 </style>
 </head>
 <body>
+  <script>
+    /* Guardian block — keep SEPARATE from the main script so it survives a
+       corrupted paste / syntax error in the main block. */
+    (function(){
+      var box=document.createElement('div');
+      box.style.cssText='display:none;background:#7f1d1d;color:#fecaca;padding:10px 14px;border-radius:10px;'+
+        'margin:10px auto;max-width:680px;font:13px/1.5 system-ui;white-space:pre-wrap';
+      function mount(){ if(document.body) document.body.insertBefore(box,document.body.firstChild); }
+      if(document.body) mount(); else window.addEventListener('DOMContentLoaded',mount);
+      window.onerror=function(m,s,l,c){ box.style.display='block';
+        box.textContent='⛔ Script error: '+m+' (line '+l+(c?':'+c:'')+')'; return false; };
+      window.__gotData=false;
+      var ping=setInterval(function(){ if(window.__gotData){ clearInterval(ping); return; }
+        try{ parent.postMessage({source:'project-ready'},'*'); }catch(e){} },700);
+      setTimeout(function(){ if(window.__gotData) return;
+        var m=document.getElementById('main');
+        if(m) m.innerHTML='<div class="empty">⛔ Not receiving data.<br>Check: ① iframe ID is <b>#projectFrame</b> '+
+          '② page code pasted (page-project.js) ③ site Published ④ you are logged in.</div>';
+      },8000);
+    })();
+  </script>
   <script>
     var DASH_URL = "https://www.autoboticedu.com/intermediate-dashboard";
     function goDash(){
@@ -54,33 +82,97 @@
     <button onclick="goDash()" style="cursor:pointer;border:2px solid #34d399;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13.5px;font-family:inherit;background:transparent;color:#a7f3d0">📊 My Progress</button>
   </nav>
   <header>
-    <h2>🚀 My Project</h2>
-    <p>Your engineering project workspace — fill in each section as your project grows. Your teacher scores the project on the Project Rubric (100 pts); <b>community engagement counts too</b> — post your project video on time, reply to comments, and give helpful comments on classmates’ projects (up to 10 pts).</p>
+    <h2>🚀 My Projects</h2>
+    <p>Your engineering project workspace. Each project keeps its own plan, budget and logsheet.
+    Finished one? <b>Start a new project</b> — the old one is archived, never lost, and your teacher
+    can still score it on the Project Rubric (100 pts). <b>Community engagement counts too</b> —
+    post your project video on time, reply to comments, and comment helpfully on classmates’ projects.</p>
   </header>
+  <div class="tabs" id="tabs"></div>
+  <div class="robanner" id="robanner" style="display:none"></div>
   <div class="score" id="scorebox" style="display:none"></div>
   <main id="main"><div class="empty">Loading…</div></main>
 
 <script>
-  let DATA=null;
+  let PAY=null, SEL=null, SELNEXT=null, GOT=false, EXPECT=false, DIRTY=false;
   function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function pj(s,fb){ try{ const v=JSON.parse(s); return v===null||v===undefined?fb:v; }catch(e){ return fb; } }
+  function findProj(pid){ return (PAY&&PAY.projects||[]).filter(p=>p.projectId===pid)[0]||null; }
+  function fmtLogDate(d){
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));
+    if(!m) return String(d||'');   // legacy locale-string entries: show as stored
+    const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return Number(m[3])+' '+MO[Number(m[2])-1]+' '+m[1];
+  }
+  function projLabel(p,i){
+    const det=pj(p.details,{});
+    let t='Project '+(i+1);
+    if(det.title) t+=' · '+(det.title.length>18?det.title.slice(0,18)+'…':det.title);
+    if(p.status==='active') t='🟢 '+t; else t='🔒 '+t;
+    if(p.scoreTotal!==null&&p.scoreTotal!==undefined) t+=' 🏅';
+    return t;
+  }
+
+  function renderTabs(){
+    const box=document.getElementById('tabs'); box.innerHTML='';
+    (PAY.projects||[]).forEach((p,i)=>{
+      const b=document.createElement('button');
+      b.className='tab'+(p.projectId===SEL?' on':'');
+      b.textContent=projLabel(p,i);
+      b.onclick=()=>{ switchTo(p.projectId); };
+      box.appendChild(b);
+    });
+    const n=document.createElement('button');
+    n.className='tab newp'; n.textContent='➕ New project';
+    n.onclick=newProject;
+    box.appendChild(n);
+  }
+  function switchTo(pid){
+    if(pid===SEL) return;
+    if(DIRTY && !window.confirm('You have unsaved changes in this project. Switch anyway and lose them?')) return;
+    DIRTY=false; SEL=pid; renderAll();
+  }
+  function newProject(){
+    const act=findProj(PAY.activeId);
+    const t=act?(pj(act.details,{}).title||'your current project'):'your current project';
+    if(!window.confirm('Start a NEW project?\n\n“'+t+'” will be archived: still visible here and to your teacher (and can still be scored), but read-only. You can make it active again later.')) return;
+    EXPECT=true; DIRTY=false;
+    parent.postMessage({source:'project-new'},'*');
+  }
+  function activateProject(pid){
+    if(!window.confirm('Make this project active again? Your current active project will be archived (read-only) instead.')) return;
+    EXPECT=true; SELNEXT=pid; DIRTY=false;
+    parent.postMessage({source:'project-activate', projectId:pid},'*');
+  }
+
+  function renderAll(){ renderTabs(); render(); }
 
   function render(){
-    const det=pj(DATA.details,{title:'',problem:'',solution:'',components:''});
-    const plan=pj(DATA.plan,[]);
-    const bud=pj(DATA.budget,[]);
-    const log=pj(DATA.logsheet,[]);
+    const proj=findProj(SEL); if(!proj) return;
+    const ro=proj.status!=='active';
+    const dis=ro?' disabled':'';
+    const det=pj(proj.details,{title:'',problem:'',solution:'',components:''});
+    const plan=pj(proj.plan,[]);
+    const bud=pj(proj.budget,[]);
+    const log=pj(proj.logsheet,[]);
 
-    // score card (teacher-released)
-    if(DATA.scoreTotal!==null&&DATA.scoreTotal!==undefined){
-      const p=pj(DATA.scoreParts,{});
+    const rb=document.getElementById('robanner');
+    if(ro){
+      rb.style.display='block';
+      rb.innerHTML='<div class="inner">🔒 This project is <b>archived</b> — read-only. '+
+        '<button class="btn ghost" style="margin-top:0" onclick="activateProject(\''+esc(SEL)+'\')">✏️ Make it my active project</button></div>';
+    } else { rb.style.display='none'; rb.innerHTML=''; }
+
+    const sb=document.getElementById('scorebox');
+    if(proj.scoreTotal!==null&&proj.scoreTotal!==undefined){
+      const p=pj(proj.scoreParts,{});
       const L={functionality:'Functionality /30',explanation:'Explanation /20',design:'Design decisions /20',
                creativity:'Creativity /10',presentation:'Presentation /10',engagement:'Community engagement /10'};
-      document.getElementById('scorebox').style.display='block';
-      document.getElementById('scorebox').innerHTML='<div class="scorecard"><b>🏅 Project score: '+DATA.scoreTotal+'/100</b><br>'+
+      sb.style.display='block';
+      sb.innerHTML='<div class="scorecard"><b>🏅 Project score: '+proj.scoreTotal+'/100</b><br>'+
         Object.keys(L).map(k=>L[k].replace(' /',': '+(p[k]!==undefined?p[k]:'—')+'/')).join(' · ')+
-        (DATA.scoreNote?'<br>💬 “'+esc(DATA.scoreNote)+'”':'')+'</div>';
-    }
+        (proj.scoreNote?'<br>💬 “'+esc(proj.scoreNote)+'”':'')+'</div>';
+    } else { sb.style.display='none'; sb.innerHTML=''; }
 
     const m=document.getElementById('main');
     m.innerHTML='';
@@ -88,61 +180,70 @@
     // 1. Details
     const c1=document.createElement('div'); c1.className='sect';
     c1.innerHTML='<div class="card"><h3>📋 Project details</h3><div class="sub">What are you building and why?</div>'+
-      '<label>Project title</label><input type="text" id="d-title" value="'+esc(det.title)+'">'+
-      '<label>The problem it solves</label><textarea id="d-problem" rows="2">'+esc(det.problem)+'</textarea>'+
-      '<label>Your solution (what it does, how)</label><textarea id="d-solution" rows="3">'+esc(det.solution)+'</textarea>'+
-      '<label>Components &amp; sensors used</label><textarea id="d-components" rows="2">'+esc(det.components)+'</textarea>'+
-      '<button class="btn" onclick="saveDetails(this)">💾 Save details</button><span class="saved"></span></div>';
+      '<label>Project title</label><input type="text" id="d-title"'+dis+' value="'+esc(det.title)+'">'+
+      '<label>The problem it solves</label><textarea id="d-problem" rows="2"'+dis+'>'+esc(det.problem)+'</textarea>'+
+      '<label>Your solution (what it does, how)</label><textarea id="d-solution" rows="3"'+dis+'>'+esc(det.solution)+'</textarea>'+
+      '<label>Components &amp; sensors used</label><textarea id="d-components" rows="2"'+dis+'>'+esc(det.components)+'</textarea>'+
+      (ro?'':'<button class="btn" onclick="saveDetails(this)">💾 Save details</button><span class="saved"></span>')+'</div>';
     m.appendChild(c1);
 
     // 2. Plan
     const c2=document.createElement('div'); c2.className='sect';
-    let prow=plan.map((p,i)=>'<tr><td><input value="'+esc(p.task||'')+'" data-f="task"></td>'+
-      '<td><input value="'+esc(p.due||'')+'" data-f="due" placeholder="e.g. 20 Jun"></td>'+
-      '<td><select data-f="st" style="background:#11142e;color:#eef0ff;border:0;font-family:inherit;font-size:12.5px">'+
+    let prow=plan.map((p)=>'<tr><td><input'+dis+' value="'+esc(p.task||'')+'" data-f="task"></td>'+
+      '<td><input'+dis+' value="'+esc(p.due||'')+'" data-f="due" placeholder="e.g. 20 Jun"></td>'+
+      '<td><select'+dis+' data-f="st" style="background:#11142e;color:#eef0ff;border:0;font-family:inherit;font-size:12.5px">'+
         ['Not started','In progress','Done'].map(s=>'<option'+(p.st===s?' selected':'')+'>'+s+'</option>').join('')+
-      '</select></td><td><button class="rm" onclick="this.closest(\'tr\').remove()">✕</button></td></tr>').join('');
+      '</select></td>'+(ro?'':'<td><button class="rm" onclick="this.closest(\'tr\').remove();markDirty()">✕</button></td>')+'</tr>').join('');
     c2.innerHTML='<div class="card"><h3>🗓 Project plan</h3><div class="sub">Break the project into steps with target dates.</div>'+
-      '<table id="plantab"><tr><th>Task / milestone</th><th>Target date</th><th>Status</th><th></th></tr>'+prow+'</table>'+
-      '<button class="btn ghost" onclick="addPlanRow()">+ Add step</button>'+
-      '<button class="btn" onclick="savePlan(this)">💾 Save plan</button><span class="saved"></span></div>';
+      '<table id="plantab"><tr><th>Task / milestone</th><th>Target date</th><th>Status</th>'+(ro?'':'<th></th>')+'</tr>'+prow+'</table>'+
+      (ro?'':'<button class="btn ghost" onclick="addPlanRow()">+ Add step</button>'+
+      '<button class="btn" onclick="savePlan(this)">💾 Save plan</button><span class="saved"></span>')+'</div>';
     m.appendChild(c2);
 
     // 3. Budget
     const c3=document.createElement('div'); c3.className='sect';
-    let brow=bud.map(b=>'<tr><td><input value="'+esc(b.item||'')+'" data-f="item"></td>'+
-      '<td><input value="'+esc(b.qty||'')+'" data-f="qty" style="text-align:center" oninput="budTotal()"></td>'+
-      '<td><input value="'+esc(b.cost||'')+'" data-f="cost" style="text-align:right" oninput="budTotal()"></td>'+
-      '<td class="bt" style="text-align:right"></td><td><button class="rm" onclick="this.closest(\'tr\').remove();budTotal()">✕</button></td></tr>').join('');
+    let brow=bud.map(b=>'<tr><td><input'+dis+' value="'+esc(b.item||'')+'" data-f="item"></td>'+
+      '<td><input'+dis+' value="'+esc(b.qty||'')+'" data-f="qty" style="text-align:center" oninput="budTotal();markDirty()"></td>'+
+      '<td><input'+dis+' value="'+esc(b.cost||'')+'" data-f="cost" style="text-align:right" oninput="budTotal();markDirty()"></td>'+
+      '<td class="bt" style="text-align:right"></td>'+
+      (ro?'':'<td><button class="rm" onclick="this.closest(\'tr\').remove();budTotal();markDirty()">✕</button></td>')+'</tr>').join('');
     c3.innerHTML='<div class="card"><h3>💰 Budget list</h3><div class="sub">Parts you need: quantity × unit cost (RM).</div>'+
-      '<table id="budtab"><tr><th>Item</th><th style="width:60px">Qty</th><th style="width:90px">Unit RM</th><th style="width:80px">Total</th><th></th></tr>'+brow+'</table>'+
+      '<table id="budtab"><tr><th>Item</th><th style="width:60px">Qty</th><th style="width:90px">Unit RM</th><th style="width:80px">Total</th>'+(ro?'':'<th></th>')+'</tr>'+brow+'</table>'+
       '<div class="bud-total" id="budtotal"></div>'+
-      '<button class="btn ghost" onclick="addBudRow()">+ Add item</button>'+
-      '<button class="btn" onclick="saveBudget(this)">💾 Save budget</button><span class="saved"></span></div>';
+      (ro?'':'<button class="btn ghost" onclick="addBudRow()">+ Add item</button>'+
+      '<button class="btn" onclick="saveBudget(this)">💾 Save budget</button><span class="saved"></span>')+'</div>';
     m.appendChild(c3);
 
     // 4. Logsheet
     const c4=document.createElement('div'); c4.className='sect';
-    let lrows=log.map(e=>'<div class="logentry"><span class="ld">'+esc(e.date||'')+'</span><br>'+
-      '<b>Did:</b> '+esc(e.did||'')+(e.problem?'<br><b>Problem:</b> '+esc(e.problem):'')+(e.next?'<br><b>Next:</b> '+esc(e.next):'')+'</div>').join('');
     c4.innerHTML='<div class="card"><h3>📓 Project logsheet</h3><div class="sub">Add an entry every session — what you did, what broke, what\'s next. Your teacher reads these when scoring.</div>'+
-      '<div id="logold">'+(lrows||'<div class="sub">No entries yet.</div>')+'</div>'+
-      '<label>What did you do today?</label><textarea id="l-did" rows="2"></textarea>'+
+      '<div id="logold"></div>'+
+      (ro?'':'<label>What did you do today?</label><textarea id="l-did" rows="2"></textarea>'+
       '<label>Any problem? How did you handle it?</label><textarea id="l-problem" rows="2"></textarea>'+
       '<label>Next step</label><input type="text" id="l-next">'+
-      '<button class="btn" onclick="addLog(this)">➕ Add log entry</button><span class="saved"></span></div>';
+      '<button class="btn" onclick="addLog(this)">➕ Add log entry</button><span class="saved"></span>')+'</div>';
     m.appendChild(c4);
+    renderLogList(log);
     budTotal();
+    DIRTY=false;
+    if(!ro){ m.addEventListener('input',markDirty); }
+  }
+  function markDirty(){ DIRTY=true; }
+  function renderLogList(log){
+    const el=document.getElementById('logold'); if(!el) return;
+    el.innerHTML=log.map(e=>'<div class="logentry"><span class="ld">'+esc(fmtLogDate(e.date))+'</span><br>'+
+      '<b>Did:</b> '+esc(e.did||'')+(e.problem?'<br><b>Problem:</b> '+esc(e.problem):'')+
+      (e.next?'<br><b>Next:</b> '+esc(e.next):'')+'</div>').join('')||'<div class="sub">No entries yet.</div>';
   }
 
-  function addPlanRow(){ const t=document.getElementById('plantab');
+  function addPlanRow(){ const t=document.getElementById('plantab'); markDirty();
     const r=t.insertRow(-1); r.innerHTML='<td><input data-f="task"></td><td><input data-f="due" placeholder="e.g. 20 Jun"></td>'+
       '<td><select data-f="st" style="background:#11142e;color:#eef0ff;border:0;font-family:inherit;font-size:12.5px"><option>Not started</option><option>In progress</option><option>Done</option></select></td>'+
-      '<td><button class="rm" onclick="this.closest(\'tr\').remove()">✕</button></td>'; }
-  function addBudRow(){ const t=document.getElementById('budtab');
+      '<td><button class="rm" onclick="this.closest(\'tr\').remove();markDirty()">✕</button></td>'; }
+  function addBudRow(){ const t=document.getElementById('budtab'); markDirty();
     const r=t.insertRow(-1); r.innerHTML='<td><input data-f="item"></td><td><input data-f="qty" style="text-align:center" oninput="budTotal()"></td>'+
       '<td><input data-f="cost" style="text-align:right" oninput="budTotal()"></td><td class="bt" style="text-align:right"></td>'+
-      '<td><button class="rm" onclick="this.closest(\'tr\').remove();budTotal()">✕</button></td>'; }
+      '<td><button class="rm" onclick="this.closest(\'tr\').remove();budTotal();markDirty()">✕</button></td>'; }
   function budTotal(){
     let sum=0;
     document.querySelectorAll('#budtab tr').forEach((tr,i)=>{ if(i===0) return;
@@ -151,8 +252,8 @@
     const el=document.getElementById('budtotal'); if(el) el.textContent='Total: RM '+sum.toFixed(2);
   }
 
-  function mark(btn){ const s=btn.parentNode.querySelector('.saved'); s.textContent='Saving…';
-    btn.dataset.pending='1'; window._lastBtn=btn; }
+  function mark(btn){ const s=btn.parentNode.querySelector('.saved'); if(s) s.textContent='Saving…';
+    window._lastBtn=btn; }
   function saveDetails(btn){ mark(btn);
     post('details',{title:val('d-title'),problem:val('d-problem'),solution:val('d-solution'),components:val('d-components')}); }
   function savePlan(btn){ mark(btn);
@@ -168,27 +269,65 @@
   function addLog(btn){
     const did=val('l-did'); if(!did){ alert('Write what you did first 🙂'); return; }
     mark(btn);
-    const log=pj(DATA.logsheet,[]);
-    log.push({date:new Date().toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}),
-              did:did, problem:val('l-problem'), next:val('l-next')});
-    DATA.logsheet=JSON.stringify(log);
+    const proj=findProj(SEL); const log=pj(proj?proj.logsheet:'[]',[]);
+    // NOTE: not written into proj until the backend confirms the save (no optimistic mutation)
+    log.push({date:new Date().toISOString().slice(0,10), did:did, problem:val('l-problem'), next:val('l-next')});
     post('logsheet',log);
   }
   function val(id){ const el=document.getElementById(id); return el?el.value.trim().slice(0,1000):''; }
-  function post(section,data){ parent.postMessage({source:'project-save', section:section, data:data}, '*'); }
+  function post(section,data){
+    window._pendingSave={section:section,data:data,projectId:SEL};
+    parent.postMessage({source:'project-save', section:section, data:data, projectId:SEL}, '*');
+  }
 
   window.addEventListener('message',(e)=>{
-    const d=e.data;
-    if(d && d.source==='project-data'){
-      if(d.error){ document.getElementById('main').innerHTML='<div class="empty">'+(d.error==='login-required'?'Please log in to open your project.':'Could not load project.')+'</div>'; return; }
-      DATA=d; render();
+    const d=e.data; if(!d) return;
+    if(d.source==='project-data'){
+      window.__gotData=true;
+      if(d.error){ document.getElementById('main').innerHTML='<div class="empty">'+
+        (d.error==='login-required'?'Please log in to open your project.':'Could not load your projects.')+'</div>'; return; }
+      let projects=d.projects;
+      if(!projects){   // legacy flat payload (old page code not yet updated)
+        projects=[{projectId:'p1',status:'active',details:d.details||'',plan:d.plan||'',budget:d.budget||'',
+          logsheet:d.logsheet||'',scoreParts:d.scoreParts||'',scoreTotal:d.scoreTotal,scoreNote:d.scoreNote||''}];
+      }
+      if(GOT && !EXPECT) return;   // ignore repeat pushes after first render — protects mid-typing edits
+      EXPECT=false; GOT=true;
+      PAY={activeId:d.activeId||'p1', projects:projects};
+      SEL=SELNEXT||SEL||PAY.activeId||projects[0].projectId; SELNEXT=null;
+      if(!findProj(SEL)) SEL=PAY.activeId||projects[0].projectId;
+      renderAll();
     }
-    if(d && d.source==='project-saved'){
+    if(d.source==='project-saved'){
       const btn=window._lastBtn;
-      if(btn){ const s=btn.parentNode.querySelector('.saved');
-        s.textContent=d.ok?'✅ Saved':'⛔ '+(d.error||'failed');
-        setTimeout(()=>{ s.textContent=''; },2000); }
-      if(d.ok && d.section==='logsheet'){ render(); }
+      const s=btn&&btn.parentNode?btn.parentNode.querySelector('.saved'):null;
+      if(d.ok){
+        const pend=window._pendingSave; window._pendingSave=null;
+        const proj=findProj((pend&&pend.projectId)||SEL);
+        if(pend&&proj&&pend.section===d.section){
+          proj[pend.section]=JSON.stringify(pend.data);
+          if(pend.section==='logsheet'){
+            renderLogList(pend.data);
+            ['l-did','l-problem','l-next'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+          }
+          if(pend.section==='details') renderTabs();   // tab label may show the new title
+        }
+        DIRTY=false;
+        if(s){ s.textContent='✅ Saved'; setTimeout(()=>{ s.textContent=''; },2000); }
+      } else {
+        let msg=d.error||'failed';
+        if(d.error==='too-long') msg='this section is full — shorten it, or start a new project';
+        if(d.error==='archived') msg='this project is archived (read-only)';
+        if(d.error==='login-required') msg='please log in again';
+        if(s) s.textContent='⛔ '+msg;
+      }
+    }
+    if(d.source==='project-new-result'){
+      if(d.ok){ SELNEXT=d.projectId||null; }   // fresh project-data follows from the page code
+      else { EXPECT=false; alert('Could not start a new project: '+(d.error||'failed')); }
+    }
+    if(d.source==='project-activate-result'){
+      if(!d.ok){ EXPECT=false; alert('Could not change the active project: '+(d.error||'failed')); }
     }
   });
 </script>

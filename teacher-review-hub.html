@@ -53,6 +53,27 @@
 </style>
 </head>
 <body>
+  <script>
+    /* Guardian block — keep SEPARATE from the main script so it survives a
+       corrupted paste / syntax error in the main block. */
+    (function(){
+      var box=document.createElement('div');
+      box.style.cssText='display:none;background:#7f1d1d;color:#fecaca;padding:10px 14px;border-radius:10px;'+
+        'margin:10px auto;max-width:900px;font:13px/1.5 system-ui;white-space:pre-wrap';
+      function mount(){ if(document.body) document.body.insertBefore(box,document.body.firstChild); }
+      if(document.body) mount(); else window.addEventListener('DOMContentLoaded',mount);
+      window.onerror=function(m,s,l,c){ box.style.display='block';
+        box.textContent='⛔ Script error: '+m+' (line '+l+(c?':'+c:'')+')'; return false; };
+      window.__gotData=false;
+      var ping=setInterval(function(){ if(window.__gotData){ clearInterval(ping); return; }
+        try{ parent.postMessage({source:'teacher-review-ready'},'*'); }catch(e){} },700);
+      setTimeout(function(){ if(window.__gotData) return;
+        var m=document.getElementById('list');
+        if(m) m.innerHTML='<div class="empty">⛔ Not receiving data.<br>Check: ① iframe ID is <b>#reviewFrame</b> '+
+          '② page code pasted (page-teacher-review.js) ③ site Published ④ you are logged in as a teacher.</div>';
+      },8000);
+    })();
+  </script>
   <header>
     <h2>🧑‍🏫 Teacher Console</h2>
     <p>Score build videos, run IMCC &amp; projects, issue certificates and manage parent links — all in one place.</p>
@@ -93,7 +114,11 @@
 3. <b>Review within one week</b> — stale reviews kill posting habits, and the whole skills pillar depends on students posting.<br>
 4. <b>No phone ≠ no score</b> — record the student's demo on the centre device during the SHARE step and post it for them.<br>
 5. <b>Spot-check against coaching</b> — occasionally ask a live "change X for me now" probe; a scripted video can't survive it.</p>
-    <p class="hint" style="padding:8px 0">🐛 <b>Problem-solving:</b> videos must include a ~10 s "fail clip" (something that broke + the fix). No fail clip → score problem-solving from the Mission Log "Broke/Fixed" answers shown on the card, or a 30-second live probe in class ("read me that error — what would you check first?"). Don't penalise hitting MORE bugs — harder bugs usually mean a more ambitious build. Precise help-seeking ("it fails on the second loop, is the sleep wrong?") scores HIGH, not low.</p>
+    <p class="hint" style="padding:8px 0">🐛 <b>Problem-solving:</b> videos must include a ~10 s "fail clip" (something that broke + the fix).
+No fail clip → score problem-solving from the Mission Log "Broke/Fixed" answers shown on the card,
+or a 30-second live probe in class ("read me that error — what would you check first?").
+Don't penalise hitting MORE bugs — harder bugs usually mean a more ambitious build.
+Precise help-seeking ("it fails on the second loop, is the sleep wrong?") scores HIGH, not low.</p>
   </details>
 
 
@@ -128,9 +153,11 @@
   <details class="guide">
     <summary>🚀 Project — view workspaces &amp; score against the Project Rubric (100 pts)</summary>
     <p class="hint" style="padding:6px 0">Functionality /30 · Explanation /20 · Design decisions /20 · Creativity /10 · Presentation /10 · Community engagement /10 (posting + giving/receiving feedback — behaviour the student controls, not raw likes). Score appears on the student dashboard and Parent Update.</p>
-    <div style="display:flex;gap:10px;align-items:center;padding:4px 0 8px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:4px 0 8px">
       <label style="font-size:13.5px;font-weight:700">Student:</label>
-      <select id="projStudent" onchange="renderProj()" style="padding:9px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit;font-size:14px;min-width:200px"></select>
+      <select id="projStudent" onchange="projStudentChanged()" style="padding:9px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit;font-size:14px;min-width:200px"></select>
+      <label style="font-size:13.5px;font-weight:700">Project:</label>
+      <select id="projSelect" onchange="renderProj()" style="padding:9px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit;font-size:14px;min-width:220px"></select>
     </div>
     <div id="projBox"><div class="hint">Loading…</div></div>
   </details>
@@ -362,25 +389,65 @@
     ['engagement','Community engagement',10,'0\u20133 posted video late/minimal \u00b7 4\u20136 posted on time + replied to comments on own video \u00b7 7\u201310 also gave constructive comments on \u22653 classmates\u2019 projects. Likes/comments are EVIDENCE to glance at \u2014 not the score (popularity must not grade engineering).']];
   let PROJ=null;
   function pjT(s,fb){ try{ const v=JSON.parse(s); return v===null||v===undefined?fb:v; }catch(e){ return fb; } }
+  function studentProjects(s){
+    if(s && s.projects && s.projects.length) return s.projects;
+    // legacy flat student object (old backend not yet updated) → one project
+    if(s && (s.details!==undefined || s.scoreTotal!==undefined)){
+      return [{projectId:'p1',status:'active',details:s.details||'',plan:s.plan||'',budget:s.budget||'',
+        logsheet:s.logsheet||'',scoreParts:s.scoreParts||'',scoreTotal:s.scoreTotal,scoreNote:s.scoreNote||''}];
+    }
+    return [];
+  }
   function loadProj(d){
     PROJ=d;
-    const sel=document.getElementById('projStudent'); sel.innerHTML='';
+    const sel=document.getElementById('projStudent');
+    const keep=sel.value; sel.innerHTML='';
     (d.students||[]).forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=s.memberName; sel.appendChild(o); });
+    if(keep!=='' && Number(keep)<(d.students||[]).length) sel.value=keep;
+    projStudentChanged();
+  }
+  function projStudentChanged(){
+    const psel=document.getElementById('projSelect');
+    const keepP=psel.value; psel.innerHTML='';
+    const s=(PROJ&&PROJ.students||[])[Number(document.getElementById('projStudent').value)||0];
+    const projects=studentProjects(s);
+    projects.forEach((p,i)=>{
+      const det=pjT(p.details,{});
+      const o=document.createElement('option'); o.value=p.projectId;
+      o.textContent='Project '+(i+1)+(det.title?' · '+(det.title.length>24?det.title.slice(0,24)+'…':det.title):'')+
+        (p.status==='archived'?' 🔒':' 🟢')+
+        ((p.scoreTotal!==null&&p.scoreTotal!==undefined)?' · 🏅 '+p.scoreTotal+'/100':' · unscored');
+      psel.appendChild(o);
+    });
+    if(!projects.length){ const o=document.createElement('option'); o.value='p1'; o.textContent='Project 1 (nothing saved yet)'; psel.appendChild(o); }
+    if(keepP && projects.some(p=>p.projectId===keepP)) psel.value=keepP;
+    else if(s && s.activeId && projects.some(p=>p.projectId===s.activeId)) psel.value=s.activeId;
     renderProj();
   }
   function renderProj(){
     const box=document.getElementById('projBox'); box.innerHTML='';
     if(!PROJ||!(PROJ.students||[]).length){ box.innerHTML='<div class="hint">No students yet.</div>'; return; }
     const s=PROJ.students[Number(document.getElementById('projStudent').value)||0];
-    const det=pjT(s.details,{}), plan=pjT(s.plan,[]), bud=pjT(s.budget,[]), log=pjT(s.logsheet,[]), parts=pjT(s.scoreParts,{});
+    const projects=studentProjects(s);
+    const pid=document.getElementById('projSelect').value||'p1';
+    const p=projects.filter(x=>x.projectId===pid)[0]||projects[0]||
+      {projectId:pid,status:'active',details:'',plan:'',budget:'',logsheet:'',scoreParts:'',scoreTotal:null,scoreNote:''};
+    const det=pjT(p.details,{}), plan=pjT(p.plan,[]), bud=pjT(p.budget,[]), log=pjT(p.logsheet,[]), parts=pjT(p.scoreParts,{});
     let h='<div style="background:#161a3a;border:1px solid #33386f;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:8px">'+
-      '<b style="color:#9fd6ff">'+esc(det.title||'(no title yet)')+'</b>'+
+      '<b style="color:#9fd6ff">'+esc(det.title||'(no title yet)')+'</b> '+
+      (p.status==='archived'?'<span style="color:#c3caff;font-size:11px;font-weight:800">🔒 ARCHIVED</span>':'<span style="color:#a7f3d0;font-size:11px;font-weight:800">🟢 ACTIVE</span>')+
       (det.problem?'<br><b>Problem:</b> '+esc(det.problem):'')+
       (det.solution?'<br><b>Solution:</b> '+esc(det.solution):'')+
       (det.components?'<br><b>Components:</b> '+esc(det.components):'')+
-      '<br><b>Plan:</b> '+(plan.length? plan.map(p=>esc(p.task)+' ('+esc(p.st||'')+')').join(' · ') : '—')+
+      '<br><b>Plan:</b> '+(plan.length? plan.map(x=>esc(x.task)+' ('+esc(x.st||'')+')').join(' · ') : '—')+
       '<br><b>Budget:</b> '+(bud.length? bud.length+' items, RM '+bud.reduce((t2,b)=>t2+(Number(b.qty)||0)*(Number(b.cost)||0),0).toFixed(2) : '—')+
       '<br><b>Logsheet:</b> '+(log.length? log.length+' entries — latest: “'+esc((log[log.length-1]||{}).did||'')+'”' : '—')+'</div>';
+    if(log.length){
+      h+='<details style="margin-bottom:8px"><summary style="cursor:pointer;color:#9fd6ff;font-size:12.5px;font-weight:700">📓 Read full logsheet ('+log.length+')</summary>'+
+        log.slice().reverse().map(e=>'<div style="background:#161a3a;border:1px solid #2c3163;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:12.5px;line-height:1.5">'+
+          '<span style="color:#ffd64a;font-weight:800;font-size:11.5px">'+esc(String(e.date||''))+'</span> — '+esc(e.did||'')+
+          (e.problem?'<br><b>Problem:</b> '+esc(e.problem):'')+(e.next?'<br><b>Next:</b> '+esc(e.next):'')+'</div>').join('')+'</details>';
+    }
     h+='<div style="display:grid;gap:7px">';
     PROJ_RUBRIC.forEach(r=>{
       const cur=(parts[r[0]]!==undefined)?parts[r[0]]:'';
@@ -391,8 +458,8 @@
         '<span style="color:#9fa6dd;font-size:11.5px;flex:1">'+r[3]+'</span></div>';
     });
     h+='</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">'+
-      '<b style="color:#ffd64a;font-size:14px">Total: <span id="projTot">'+(s.scoreTotal!==null&&s.scoreTotal!==undefined?s.scoreTotal:'—')+'</span>/100</b>'+
-      '<input type="text" id="projNote" maxlength="300" placeholder="Comment for student/parents (optional)" value="'+esc(s.scoreNote||'')+'" '+
+      '<b style="color:#ffd64a;font-size:14px">Total: <span id="projTot">'+(p.scoreTotal!==null&&p.scoreTotal!==undefined?p.scoreTotal:'—')+'</span>/100</b>'+
+      '<input type="text" id="projNote" maxlength="300" placeholder="Comment for student/parents (optional)" value="'+esc(p.scoreNote||'')+'" '+
       'style="flex:1;min-width:180px;padding:8px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit;font-size:13px">'+
       '<button style="cursor:pointer;border:0;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13px;font-family:inherit;background:linear-gradient(135deg,#34d399,#22d3ee);color:#06351f" onclick="saveProj(this,\''+s.memberId+'\')">💾 Save score</button>'+
       '<span class="projdone" style="color:#a7f3d0;font-size:12px;font-weight:700"></span></div>';
@@ -408,7 +475,8 @@
     const parts={};
     document.querySelectorAll('#projBox input[data-pk]').forEach(i=>{ parts[i.dataset.pk]=Number(i.value)||0; });
     btn.disabled=true;
-    parent.postMessage({source:'project-score', memberId:memberId, parts:parts,
+    parent.postMessage({source:'project-score', memberId:memberId,
+      projectId:document.getElementById('projSelect').value||'p1', parts:parts,
       note:document.getElementById('projNote').value.trim()}, '*');
   }
 
@@ -556,6 +624,7 @@
 
   window.addEventListener('message',(e)=>{
     const d=e.data;
+    if(d && d.source) window.__gotData=true;   // stops the guardian ready-pings
     if(d && d.source==='imcc-matrix'){
       if(!d.error) loadImcc(d);
       else document.getElementById('imccRows').innerHTML='<div class="hint">⛔ '+esc(d.error)+'</div>';
@@ -572,6 +641,7 @@
       const el=document.querySelector('.projdone'); const btn=document.querySelector('#projBox button');
       if(btn) btn.disabled=false;
       if(el) el.textContent=d.ok?('Saved — '+d.scoreTotal+'/100 ✓'):'⛔ '+(d.error||'failed');
+      if(d.ok) parent.postMessage({source:'project-reload'}, '*');   // refresh matrix so the 🏅 shows
     }
     if(d && d.source==='cert-list'){ if(!d.error) loadCerts(d); }
     if(d && d.source==='cert-revoked'){
