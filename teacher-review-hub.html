@@ -201,6 +201,21 @@ Precise help-seeking ("it fails on the second loop, is the sleep wrong?") scores
     <div id="plinks" style="display:grid;gap:8px;padding:6px 0 10px"><div class="hint">Loading students…</div></div>
   </details>
 
+  <details class="guide">
+    <summary>📝 Parent report comment — your overall note on each child's report</summary>
+    <p class="hint" style="padding:6px 0">Shown at the top of that child's Parent Update as “Teacher's comment”, with the date. Write it like a report-card remark — progress, strengths, one thing to work on. Update it any time (e.g. monthly or per term).</p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:4px 0 8px">
+      <label style="font-size:13.5px;font-weight:700">Student:</label>
+      <select id="noteStudent" onchange="noteStudentChanged()" style="padding:9px 12px;border-radius:10px;border:2px solid #5b63b8;background:#11142e;color:#fff;font-family:inherit;font-size:14px;min-width:200px"></select>
+    </div>
+    <textarea id="noteText" rows="4" maxlength="1200" placeholder="e.g. Aisha has grown a lot this term — she now debugs her own code before asking for help. Her Smart Bin project showed real persistence (9 log entries). Next focus: explaining WHY her design choices work."
+      style="width:100%;background:#11142e;border:2px solid #3b416f;border-radius:10px;color:#eef0ff;font-family:inherit;font-size:13.5px;padding:10px 12px;resize:vertical;outline:none"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;padding:8px 0 10px">
+      <button onclick="saveParentNote(this)" style="cursor:pointer;border:0;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13px;font-family:inherit;background:linear-gradient(135deg,#34d399,#22d3ee);color:#06351f">💾 Save comment</button>
+      <span id="noteDone" style="color:#a7f3d0;font-size:12.5px;font-weight:700"></span>
+    </div>
+  </details>
+
 
   <div id="diagBad" style="display:none;margin:14px auto;max-width:760px;background:#7f1d1d;color:#fee2e2;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:700"></div>
 
@@ -543,7 +558,30 @@ Precise help-seeking ("it fails on the second loop, is the sleep wrong?") scores
 
   /* ===== Parent links ===== */
   let PARENT_VIEW_URL='';
+  let PLINK_ITEMS=[];
+  function renderNotePicker(){
+    const sel=document.getElementById('noteStudent'); if(!sel) return;
+    const keep=sel.value; sel.innerHTML='';
+    PLINK_ITEMS.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i;
+      o.textContent=s.memberName+(s.teacherNote?' · 📝':''); sel.appendChild(o); });
+    if(keep!=='' && Number(keep)<PLINK_ITEMS.length) sel.value=keep;
+    noteStudentChanged();
+  }
+  function noteStudentChanged(){
+    const s=PLINK_ITEMS[Number(document.getElementById('noteStudent').value)||0];
+    document.getElementById('noteText').value=(s&&s.teacherNote)||'';
+    document.getElementById('noteDone').textContent='';
+  }
+  function saveParentNote(btn){
+    const s=PLINK_ITEMS[Number(document.getElementById('noteStudent').value)||0];
+    if(!s){ return; }
+    btn.disabled=true;
+    document.getElementById('noteDone').textContent='Saving…';
+    parent.postMessage({source:'parent-note', memberId:s.memberId,
+      note:document.getElementById('noteText').value.trim()}, '*');
+  }
   function renderParentLinks(items){
+    PLINK_ITEMS=items; renderNotePicker();
     const box=document.getElementById('plinks'); box.innerHTML='';
     if(!items.length){ box.innerHTML='<div class="hint">No students found yet.</div>'; return; }
     items.forEach(s=>{
@@ -660,6 +698,16 @@ Precise help-seeking ("it fails on the second loop, is the sleep wrong?") scores
       PARENT_VIEW_URL=d.parentViewUrl||'';
       if(!d.error) renderParentLinks(d.items||[]);
       else document.getElementById('plinks').innerHTML='<div class="hint">⛔ '+esc(d.error)+'</div>';
+    }
+    if(d && d.source==='parent-note-saved'){
+      const btn=document.querySelector('button[onclick^="saveParentNote"]');
+      if(btn) btn.disabled=false;
+      const el=document.getElementById('noteDone');
+      if(d.ok){
+        if(el) el.textContent='✅ Saved — shown on the Parent Update';
+        const s=PLINK_ITEMS.find(x=>x.memberId===d.memberId);
+        if(s) s.teacherNote=d.note||s.teacherNote;
+      } else if(el) el.textContent='⛔ '+(d.error||'failed');
     }
     if(d && d.source==='parent-token-result'){
       // simplest robust refresh: ask the page code to reload the list

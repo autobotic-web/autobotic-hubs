@@ -13,14 +13,47 @@
     background:linear-gradient(180deg,#fff,#ffd64a);-webkit-background-clip:text;background-clip:text;color:transparent}
   header p{margin-top:8px;color:#cfd2f0;font-size:clamp(13px,2vw,17px);max-width:640px;margin-left:auto;margin-right:auto}
   .totals{margin-top:10px;color:#ffe27a;font-weight:800;font-size:15px}
+  .repdate{display:none;color:#555;font-size:12px;text-align:center;margin-top:4px}
   .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px}
   .actions button,.actions a{cursor:pointer;border:0;border-radius:999px;padding:11px 22px;font-weight:800;font-size:14px;
     font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .12s, filter .2s}
   .actions button:hover,.actions a:hover{transform:translateY(-2px);filter:brightness(1.1)}
   #copyBtn{background:linear-gradient(135deg,#34d399,#22d3ee);color:#06351f}
   #waBtn{background:#25D366;color:#073b1c}
+  #printBtn{background:transparent;border:2px solid #5b63b8;color:#c3caff}
   #copied{display:none;color:#a7f3d0;font-weight:700;font-size:13px;align-self:center}
-  .list{max-width:760px;margin:14px auto 30px;padding:0 14px;display:flex;flex-direction:column;gap:12px}
+  .sect{max-width:760px;margin:16px auto 0;padding:0 14px}
+  .sect h3{font-size:17px;color:#ffd64a;margin-bottom:8px}
+  .card{background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:16px 18px}
+  .tnote{background:rgba(255,214,74,.08);border:1px solid #ffd64a;border-radius:16px;padding:14px 18px;
+    color:#ffeebf;font-size:14px;line-height:1.6}
+  .tnote b{color:#ffd64a}
+  .tnote .when{color:#9fa6dd;font-size:11.5px;margin-top:6px}
+  .skillrow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:13.5px}
+  .skillrow .nm{flex:0 0 150px;font-weight:700;color:#dfe2ff}
+  .skillrow .bar{flex:1;height:12px;background:#11142e;border-radius:999px;overflow:hidden;border:1px solid #2c3163}
+  .skillrow .bar i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#22d3ee);border-radius:999px}
+  .skillrow .v{flex:0 0 52px;text-align:right;font-weight:800;color:#5eead4}
+  .hintline{color:#9fa6dd;font-size:12.5px;margin-top:8px}
+  .pcard{margin-bottom:12px}
+  .pcard .toprow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .pcard .ttl{font-size:15px;font-weight:800;color:#9fd6ff}
+  .pill{font-size:11px;font-weight:800;border-radius:999px;padding:2px 10px}
+  .pill.act{background:rgba(52,211,153,.15);color:#a7f3d0;border:1px solid rgba(52,211,153,.5)}
+  .pill.arc{background:rgba(91,99,184,.15);color:#c3caff;border:1px solid #5b63b8}
+  .pscore{font-weight:800;color:#ffd64a}
+  .pbreak{color:#aab0e6;font-size:12.5px;margin-top:4px;line-height:1.6}
+  .pquote{margin-top:8px;padding:9px 12px;background:rgba(255,214,74,.08);border-left:3px solid #ffd64a;
+    border-radius:8px;color:#ffeebf;font-size:13px;line-height:1.5}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{border:1px solid #2c3163;padding:7px 9px;text-align:left}
+  th{background:#1d2250;color:#ffd64a;font-size:12px}
+  td.num{text-align:center;font-weight:700;color:#5eead4}
+  td.dim{text-align:center;color:#6e74b0}
+  .recog{display:flex;gap:8px;flex-wrap:wrap}
+  .recog .tagbig{background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.4);color:#a7f3d0;
+    border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px}
+  .list{max-width:760px;margin:8px auto 30px;padding:0 14px;display:flex;flex-direction:column;gap:12px}
   .item{background:#1b1f44;border:1px solid #33386f;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
   .item .ico{font-size:30px;flex:none;margin-top:2px}
   .item b{display:block;font-size:15px;margin-bottom:3px}
@@ -33,19 +66,72 @@
   .item .own b{color:#ffd64a}
   .item .own .fixline{margin-top:4px;color:#d9e2ff}
   .empty{text-align:center;color:#aab0e6;padding:40px 16px;font-size:15px}
+  @media print{
+    body{background:#fff;color:#111;padding:0;font-size:12px}
+    header h2{-webkit-text-fill-color:#111;color:#111;background:none;font-size:26px}
+    header p,#plnote{color:#444}
+    .totals{color:#111;border:1px solid #999;border-radius:8px;display:inline-block;padding:6px 16px}
+    .repdate{display:block}
+    .actions{display:none}
+    .sect h3{color:#111;border-bottom:2px solid #111;padding-bottom:3px}
+    .card,.item{background:#fff;border:1px solid #bbb;color:#111;break-inside:avoid}
+    .tnote{background:#fff;border:1px solid #999;color:#111}
+    .tnote b,.item .own b,.pscore{color:#111}
+    .skillrow .nm,.item .what,.item b{color:#111}
+    .skillrow .bar{background:#eee;border-color:#999}
+    .skillrow .bar i{background:#555}
+    .skillrow .v,.td .num{color:#111}
+    .pcard .ttl{color:#111}
+    .pill.act,.pill.arc,.item .meta .tag,.recog .tagbig{background:#fff;border:1px solid #777;color:#111}
+    .pbreak,.item .meta,.hintline{color:#444}
+    .pquote,.item .own{background:#fff;border-left:3px solid #555;color:#222}
+    th{background:#eee;color:#111}
+    th,td{border-color:#999}
+    td.num{color:#111}
+    td.dim{color:#888}
+  }
 </style>
 </head>
 <body>
+  <script>
+    /* Guardian block — keep SEPARATE from the main script so it survives a
+       corrupted paste / syntax error in the main block. */
+    (function(){
+      var box=document.createElement('div');
+      box.style.cssText='display:none;background:#7f1d1d;color:#fecaca;padding:10px 14px;border-radius:10px;'+
+        'margin:10px auto;max-width:760px;font:13px/1.5 system-ui;white-space:pre-wrap';
+      function mount(){ if(document.body) document.body.insertBefore(box,document.body.firstChild); }
+      if(document.body) mount(); else window.addEventListener('DOMContentLoaded',mount);
+      window.onerror=function(m,s,l,c){ box.style.display='block';
+        box.textContent='⛔ Script error: '+m+' (line '+l+(c?':'+c:'')+')'; return false; };
+      window.__gotData=false;
+      var ping=setInterval(function(){ if(window.__gotData){ clearInterval(ping); return; }
+        try{ parent.postMessage({source:'parent-summary-ready'},'*'); }catch(e){} },700);
+      setTimeout(function(){ if(window.__gotData) return;
+        var m=document.getElementById('list');
+        if(m) m.innerHTML='<div class="empty">⛔ Not receiving data.<br>Check: ① iframe ID (#summaryFrame on the dashboard / #parentFrame on Parent View) '+
+          '② page code pasted ③ site Published.</div>';
+      },8000);
+    })();
+  </script>
   <header>
     <h2>👨‍👩‍👧 Parent Update</h2>
-    <p>What your child has actually learned — in plain language, one line per completed lesson. Use the buttons to copy or share the latest update.</p>
+    <p>A full progress report — lessons, engineering skills, projects and competition missions, in plain language. Use the buttons to copy, share, or print it.</p>
     <div class="totals" id="totals"></div>
+    <div class="repdate" id="repdate"></div>
   </header>
   <div class="actions">
     <button id="copyBtn" onclick="copyUpdate()">📋 Copy update</button>
     <a id="waBtn" href="#" target="_blank" rel="noopener">💬 Share on WhatsApp</a>
+    <button id="printBtn" onclick="window.print()">🖨 Print / save PDF</button>
     <span id="copied">Copied!</span>
   </div>
+  <div class="sect" id="tnote" style="display:none"></div>
+  <div class="sect" id="skills" style="display:none"></div>
+  <div class="sect" id="projects" style="display:none"></div>
+  <div class="sect" id="imcc" style="display:none"></div>
+  <div class="sect" id="recog" style="display:none"></div>
+  <div class="sect" id="feedhead" style="display:none"><h3>📚 Lesson-by-lesson highlights</h3></div>
   <main class="list" id="list"><div class="empty">Loading progress…</div></main>
 
 <script>
@@ -78,18 +164,149 @@
     quizmaster:'got every quiz right on the first try', speed:'finished ahead of the time goal',
     puzzler:'solved every puzzle', firstrun:'ran real code', finisher:'completed the full mission'
   };
+  const MISSION_NAMES={m1:'Mission 1 · Line Following',m2:'Mission 2 · Line & Green Marker',m3:'Mission 3 · Obstacle Avoidance',
+    m4:'Mission 4 · IMU Ramp & Red Stop',m51:'Mission 5.1 · Silver Plate',m52:'Mission 5.2 · Balls Detection',
+    m53:'Mission 5.3 · Pick Up Mechanism',m54:'Mission 5.4 · Place Ball in Zones',m55:'Mission 5.5 · Exit Zone'};
+  const MISSION_ORDER=['m1','m2','m3','m4','m51','m52','m53','m54','m55'];
+  const PROJ_PARTS=[['functionality','Functionality',30],['explanation','Explanation',20],['design','Design',20],
+    ['creativity','Creativity',10],['presentation','Presentation',10],['engagement','Engagement',10]];
+  const SKILL_NAMES={presentation:'🎤 Presentation',hardware:'🔌 Hardware',coding:'💻 Coding',
+    problem:'🐛 Problem-solving',creativity:'✨ Creativity'};
   const TITLES_FALLBACK = (id)=> (id||'').replace(/^lesson-/,'Lesson ').replace(/-/g,' ');
 
   let latestText = '';
-  function fmtDate(d){ try{ const x=new Date(d); if(isNaN(x)) return ''; return x.toLocaleDateString(undefined,{day:'numeric',month:'short'});}catch(e){return ''} }
+  const esc=(x)=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function pj(s,fb){ try{ const v=JSON.parse(s); return v===null||v===undefined?fb:v; }catch(e){ return fb; } }
+  function fmtDate(d){ try{ const x=new Date(d); if(isNaN(x)) return ''; return x.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}catch(e){return ''} }
+  function fmtLogDate(d){
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));
+    if(!m) return String(d||'');
+    const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return Number(m[3])+' '+MO[Number(m[2])-1]+' '+m[1];
+  }
+
+  function renderTeacherNote(p){
+    const el=document.getElementById('tnote');
+    if(!p.teacherNote){ el.style.display='none'; return; }
+    el.style.display='block';
+    el.innerHTML='<h3>🧑‍🏫 Teacher’s comment</h3><div class="tnote">“'+esc(p.teacherNote)+'”'+
+      (p.teacherNoteAt?'<div class="when">'+fmtDate(p.teacherNoteAt)+'</div>':'')+'</div>';
+  }
+
+  function renderSkills(lessons){
+    const el=document.getElementById('skills');
+    const rubrics=[];
+    (lessons||[]).forEach(l=>{ const r=pj(l.videoRubric,null); if(r) rubrics.push(r); });
+    if(!rubrics.length){ el.style.display='none'; return; }
+    el.style.display='block';
+    let h='<h3>🛠 Engineering skills</h3><div class="card">'+
+      '<div class="hintline" style="margin:0 0 8px">Average of the teacher’s reviews of '+rubrics.length+' build video'+(rubrics.length===1?'':'s')+' (each skill scored 0–6).</div>';
+    Object.keys(SKILL_NAMES).forEach(k=>{
+      const vals=rubrics.map(r=>r[k]).filter(v=>v!==undefined).map(Number);
+      if(!vals.length) return;
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      h+='<div class="skillrow"><span class="nm">'+SKILL_NAMES[k]+'</span>'+
+        '<span class="bar"><i style="width:'+Math.round(avg/6*100)+'%"></i></span>'+
+        '<span class="v">'+avg.toFixed(1)+'/6</span></div>';
+    });
+    if(rubrics.length<3) h+='<div class="hintline">A fuller picture appears after 3 reviewed videos.</div>';
+    el.innerHTML=h+'</div>';
+  }
+
+  function renderProjects(projects){
+    const el=document.getElementById('projects');
+    const ps=(projects||[]).filter(p=>{
+      const det=pj(p.details,{});
+      return det.title||det.solution||(p.scoreTotal!==null&&p.scoreTotal!==undefined)||pj(p.logsheet,[]).length;
+    });
+    if(!ps.length){ el.style.display='none'; return []; }
+    el.style.display='block';
+    let h='<h3>🚀 Engineering projects</h3>';
+    const lines=[];
+    ps.forEach((p,i)=>{
+      const det=pj(p.details,{}), log=pj(p.logsheet,[]), parts=pj(p.scoreParts,{});
+      const arch=p.status==='archived';
+      const title=det.title||('Project '+(i+1));
+      h+='<div class="card pcard"><div class="toprow"><span class="ttl">'+esc(title)+'</span>'+
+        '<span class="pill '+(arch?'arc':'act')+'">'+(arch?'Completed / archived':'In progress')+'</span></div>';
+      if(det.solution) h+='<div style="font-size:13.5px;color:#dfe2ff;line-height:1.5">'+esc(det.solution)+'</div>';
+      if(p.scoreTotal!==null&&p.scoreTotal!==undefined){
+        h+='<div class="pbreak"><span class="pscore">🏅 Score: '+p.scoreTotal+'/100</span> — '+
+          PROJ_PARTS.map(r=>r[1]+' '+(parts[r[0]]!==undefined?parts[r[0]]:'—')+'/'+r[2]).join(' · ')+'</div>';
+        if(p.scoreNote) h+='<div class="pquote">💬 Teacher: “'+esc(p.scoreNote)+'”</div>';
+        lines.push('• Project "'+title+'": scored '+p.scoreTotal+'/100'+(p.scoreNote?' — "'+p.scoreNote+'"':''));
+      } else {
+        h+='<div class="pbreak">Not scored yet — scored when presented.</div>';
+        lines.push('• Project "'+title+'": in progress, '+log.length+' work-log entr'+(log.length===1?'y':'ies'));
+      }
+      if(log.length){
+        const last=log[log.length-1];
+        h+='<div class="pbreak">📓 '+log.length+' work-log entr'+(log.length===1?'y':'ies')+
+          ' — latest ('+esc(fmtLogDate(last.date))+'): “'+esc(last.did||'')+'”</div>';
+      }
+      h+='</div>';
+    });
+    el.innerHTML=h;
+    return lines;
+  }
+
+  function renderImcc(imcc){
+    const el=document.getElementById('imcc');
+    const have=(imcc||[]).filter(m=>m.quizScore!==null||m.practicalScore!==null);
+    if(!have.length){ el.style.display='none'; return []; }
+    el.style.display='block';
+    const by={}; (imcc||[]).forEach(m=>by[m.missionId]=m);
+    let rows='', sum=0, n=0;
+    MISSION_ORDER.forEach(id=>{
+      const m=by[id]; if(!m||(m.quizScore===null&&m.practicalScore===null)) return;
+      const quizPts=m.quizScore!==null?Math.round(m.quizScore/10):null;
+      const total=(m.practicalScore!==null)?(m.practicalScore+(quizPts||0)):null;
+      if(total!==null){ sum+=total; n++; }
+      rows+='<tr><td>'+(MISSION_NAMES[id]||id)+'</td>'+
+        '<td class="'+(quizPts!==null?'num':'dim')+'">'+(quizPts!==null?quizPts+'/10':'—')+'</td>'+
+        '<td class="'+(m.practicalScore!==null?'num':'dim')+'">'+(m.practicalScore!==null?m.practicalScore+'/90':'—')+'</td>'+
+        '<td class="'+(total!==null?'num':'dim')+'">'+(total!==null?total+'/100':'—')+'</td></tr>';
+    });
+    let h='<h3>🏁 IMCC robotics missions</h3><div class="card">'+
+      '<table><tr><th>Mission</th><th>Quiz</th><th>Practical</th><th>Total</th></tr>'+rows+'</table>'+
+      (n?'<div class="hintline">Average across scored missions: <b style="color:#5eead4">'+Math.round(sum/n)+'/100</b>. A total appears once the teacher scores the practical run.</div>'
+        :'<div class="hintline">Quiz attempts made — totals appear once the practical runs are scored.</div>')+'</div>';
+    el.innerHTML=h;
+    return n?['• IMCC missions: '+n+' scored, average '+Math.round(sum/n)+'/100']:[];
+  }
+
+  function renderRecognition(p){
+    const el=document.getElementById('recog');
+    const tags=[];
+    const lessons=p.lessons||[];
+    const wins=lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')===0&&l.finished).length;
+    if(wins) tags.push('🏆 Best Video of the Month ×'+wins);
+    const badges=new Set(); lessons.forEach(l=>(l.badges||[]).forEach(b=>badges.add(b)));
+    if(badges.size) tags.push('🎖 '+badges.size+' distinct badges earned');
+    (p.certificates||[]).forEach(c=>tags.push('🎓 '+c.title+(c.issuedAt?' ('+fmtDate(c.issuedAt)+')':'')));
+    if(!tags.length){ el.style.display='none'; return; }
+    el.style.display='block';
+    el.innerHTML='<h3>🏆 Recognition</h3><div class="card"><div class="recog">'+
+      tags.map(t=>'<span class="tagbig">'+esc(t)+'</span>').join('')+'</div></div>';
+  }
 
   function render(payload){
     const lessons=(payload.lessons||[]).filter(l=>l.finished);
     lessons.sort((a,b)=> new Date(b.updatedAt||0) - new Date(a.updatedAt||0));
     const name = payload.name || '';
-    const totals=document.getElementById('totals');
-    totals.textContent = (name? name+' · ':'') + lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
+    document.getElementById('totals').textContent =
+      (name? name+' · ':'') + lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length+
+      ' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
+    document.getElementById('repdate').textContent='Progress report · generated '+fmtDate(new Date())+' · Autobotic STEM EDU';
+
+    renderTeacherNote(payload);
+    renderSkills(payload.lessons||[]);
+    const projLines=renderProjects(payload.projects);
+    const imccLines=renderImcc(payload.imcc);
+    renderRecognition(payload);
+
     const list=document.getElementById('list'); list.innerHTML='';
+    document.getElementById('feedhead').style.display=lessons.length?'block':'none';
     if(!lessons.length){ list.innerHTML='<div class="empty">No completed lessons yet — the first update will appear after the first finished mission! 🚀</div>'; return; }
     const lines=[];
     lessons.forEach(l=>{
@@ -99,16 +316,12 @@
       const title=l.lessonTitle||TITLES_FALLBACK(l.lessonId);
       const notes=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
       if(Number(l.videoXp)>0) notes.push('🎬 build video reviewed by teacher · +'+l.videoXp+' XP'+(l.videoNote?' — “'+l.videoNote+'”':''));
-      // Teacher's skill breakdown from the video rubric (5 skills, 0-6 each)
-      let rub=null; try{ rub = l.videoRubric ? JSON.parse(l.videoRubric) : null; }catch(e){}
+      const rub=pj(l.videoRubric,null);
       if(rub){
-        const RL={presentation:'🎤 Presentation',hardware:'🔌 Hardware',coding:'💻 Coding',problem:'🐛 Problem-solving',creativity:'✨ Creativity'};
-        const parts=Object.keys(RL).filter(k=>rub[k]!==undefined).map(k=>RL[k]+' '+rub[k]+'/6');
+        const parts=Object.keys(SKILL_NAMES).filter(k=>rub[k]!==undefined).map(k=>SKILL_NAMES[k]+' '+rub[k]+'/6');
         if(parts.length) notes.push('Skills: '+parts.join(' · '));
       }
-      // Mission Log: the student's own Built/Broke/Fixed/Next answers, if saved in the lesson.
-      let ml=null; try{ ml = l.missionLog ? JSON.parse(l.missionLog) : null; }catch(e){ ml=null; }
-      const esc=(x)=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const ml=pj(l.missionLog,null);
       let own='';
       if(ml && (ml.built||ml.fixed||ml.broke)){
         own='<div class="own">💬 <b>In their own words:</b>'+
@@ -123,7 +336,10 @@
       lines.push('• '+title+': '+(ml&&ml.built? '"'+ml.built+'"' : s.what)+(notes.length?' ('+notes.join(', ')+')':''));
     });
     const intro=(name?name:'Your child')+' — progress update from AI & Robotics class:';
-    latestText=intro+'\n\n'+lines.slice(0,3).join('\n')+'\n\nTotal: '+lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP 🚀';
+    const extra=[].concat(projLines||[]).concat(imccLines||[]);
+    latestText=intro+'\n\n'+lines.slice(0,3).join('\n')+
+      (extra.length?'\n\n'+extra.join('\n'):'')+
+      '\n\nTotal: '+lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP 🚀';
     const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);
   }
 
@@ -137,6 +353,7 @@
 
   window.addEventListener('message',(e)=>{ const d=e.data;
     if(d && d.source==='parent-summary'){
+      window.__gotData=true;
       if(d.parentLink && !document.getElementById('plnote')){
         const n=document.createElement('p'); n.id='plnote';
         n.style.cssText='max-width:640px;margin:4px auto 14px;text-align:center;color:#9fa6dd;font-size:12px;padding:0 14px';
