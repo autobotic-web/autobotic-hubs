@@ -137,12 +137,12 @@
     <span id="copied">Copied!</span>
   </div>
   <div class="sect" id="tnote" style="display:none"></div>
-  <div class="sect" id="skills" style="display:none"></div>
-  <div class="sect" id="projects" style="display:none"></div>
-  <div class="sect" id="imcc" style="display:none"></div>
   <div class="sect" id="recog" style="display:none"></div>
   <div class="sect" id="feedhead" style="display:none"><h3>📚 Lesson-by-lesson highlights</h3></div>
   <main class="list" id="list"><div class="empty">Loading progress…</div></main>
+  <div class="sect" id="imcc" style="display:none"></div>
+  <div class="sect" id="projects" style="display:none"></div>
+  <div class="sect" id="skills" style="display:none;margin-bottom:30px"></div>
 
 <script>
   /* Parent-language summary per lesson: what the child CAN NOW DO, no jargon. */
@@ -244,10 +244,10 @@
         h+='<div class="pbreak"><span class="pscore">🏅 Score: '+p.scoreTotal+'/100</span> — '+
           PROJ_PARTS.map(r=>r[1]+' '+(parts[r[0]]!==undefined?parts[r[0]]:'—')+'/'+r[2]).join(' · ')+'</div>';
         if(p.scoreNote) h+='<div class="pquote">💬 Teacher: “'+esc(p.scoreNote)+'”</div>';
-        lines.push('• Project "'+title+'": scored '+p.scoreTotal+'/100'+(p.scoreNote?' — "'+p.scoreNote+'"':''));
+        lines.push('- "'+title+'" — scored '+p.scoreTotal+'/100'+(p.scoreNote?'. Teacher: "'+p.scoreNote+'"':''));
       } else {
         h+='<div class="pbreak">Not scored yet — scored when presented.</div>';
-        lines.push('• Project "'+title+'": in progress, '+log.length+' work-log entr'+(log.length===1?'y':'ies'));
+        lines.push('- "'+title+'" — in progress ('+log.length+' work-log entr'+(log.length===1?'y':'ies')+')');
       }
       if(log.length){
         const last=log[log.length-1];
@@ -282,7 +282,7 @@
       (n?'<div class="hintline">Average across scored missions: <b style="color:#5eead4">'+Math.round(sum/n)+'/100</b>. A total appears once the teacher scores the practical run.</div>'
         :'<div class="hintline">Quiz attempts made — totals appear once the practical runs are scored.</div>')+'</div>';
     el.innerHTML=h;
-    return n?['• IMCC missions: '+n+' scored, average '+Math.round(sum/n)+'/100']:[];
+    return n?[n+' mission'+(n===1?'':'s')+' scored, average '+Math.round(sum/n)+'/100']:[];
   }
 
   function renderRecognition(p){
@@ -318,9 +318,17 @@
     const list=document.getElementById('list'); list.innerHTML='';
     document.getElementById('feedhead').style.display=lessons.length?'block':'none';
     if(!lessons.length){ list.innerHTML='<div class="empty">No completed lessons yet — the first update will appear after the first finished mission! 🚀</div>'; return; }
-    const lines=[];
+    // Share text: NO emoji (they corrupt to ? in the WhatsApp URL hand-off on some
+    // devices). WhatsApp *asterisk bold* + plain hyphens only. One block per lesson.
+    const SKILL_PLAIN={presentation:'Presentation',hardware:'Hardware',coding:'Coding',
+      problem:'Problem-solving',creativity:'Creativity'};
+    const waMonth=(id)=>{ const m=/best-video-(\d{4})-(\d{2})/.exec(id||''); if(!m) return '';
+      const MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      return MO[Number(m[2])-1]+' '+m[1]; };
+    const lessonBlocks=[];
     lessons.forEach(l=>{
-      const s=(l.lessonId||'').indexOf('best-video-')===0
+      const best=(l.lessonId||'').indexOf('best-video-')===0;
+      const s=best
         ? {ico:'🏆', what:'Voted Best Video of the Month by their classmates — bonus +100 XP. A proud moment!'}
         : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
       const title=l.lessonTitle||TITLES_FALLBACK(l.lessonId);
@@ -343,13 +351,29 @@
       d.innerHTML='<div class="ico">'+s.ico+'</div><div><b>'+title+'</b><div class="what">'+s.what+'</div>'+own+
         '<div class="meta">'+notes.map(n=>'<span class="tag">'+n+'</span>').join('')+(fmtDate(l.updatedAt)?'<span>'+fmtDate(l.updatedAt)+'</span>':'')+'</div></div>';
       list.appendChild(d);
-      lines.push('• '+title+': '+(ml&&ml.built? '"'+ml.built+'"' : s.what)+(notes.length?' ('+notes.join(', ')+')':''));
+      // plain-text block for WhatsApp/copy
+      if(best){
+        lessonBlocks.push(['- Best Video of the Month ('+waMonth(l.lessonId)+') — voted by classmates, +100 XP']);
+      } else {
+        const block=['- '+title+' — '+(ml&&ml.built? '"'+ml.built+'"' : s.what)];
+        const plainBadges=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
+        if(plainBadges.length) block.push('   ('+plainBadges.join(', ')+')');
+        if(Number(l.videoXp)>0) block.push('   Build video reviewed by teacher: +'+l.videoXp+' XP'+(l.videoNote?' — "'+l.videoNote+'"':''));
+        if(rub){
+          const sp=Object.keys(SKILL_PLAIN).filter(k=>rub[k]!==undefined).map(k=>SKILL_PLAIN[k]+' '+rub[k]+'/6');
+          if(sp.length) block.push('   Skills: '+sp.join(', '));
+        }
+        lessonBlocks.push(block);
+      }
     });
-    const intro=(name?name:'Your child')+' — progress update from AI & Robotics class:';
-    const extra=[].concat(projLines||[]).concat(imccLines||[]);
-    latestText=intro+'\n\n'+lines.slice(0,3).join('\n')+
-      (extra.length?'\n\n'+extra.join('\n'):'')+
-      '\n\nTotal: '+lessons.length+' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP 🚀';
+    const realCount=lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length;
+    let t='*'+(name?name:'Your child')+' — AI & Robotics progress update* ('+fmtDate(new Date())+')';
+    t+='\n\n*Lessons:* '+realCount+' completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
+    t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
+    if(lessonBlocks.length>3) t+='\n   …and '+(lessonBlocks.length-3)+' more on the full report';
+    if(projLines&&projLines.length) t+='\n\n*Projects:*\n'+projLines.join('\n');
+    if(imccLines&&imccLines.length) t+='\n\n*IMCC robotics:* '+imccLines.join('; ');
+    latestText=t;
     const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);
   }
 
