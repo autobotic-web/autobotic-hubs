@@ -130,7 +130,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
       <h2>Lessons <span class="arrow">→</span></h2>
       <p>Your interactive missions — Python, GPIO, sensors, motors and OiviO Pi.
       Earn XP and badges as you build.</p>
-      <span class="tag">21 missions</span>
+      <span class="tag" id="tagLessons">22 missions</span>
     </a>
 
     <a class="tile t-imcc" href="https://www.autoboticedu.com/intermediate-imcc-quiz" target="_top">
@@ -138,7 +138,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
       <h2>IMCC Quiz <span class="arrow">→</span></h2>
       <p>Test your competition knowledge — line following, obstacle avoidance,
       ball rescue and more.</p>
-      <span class="tag">7 mission quizzes</span>
+      <span class="tag" id="tagQuiz">9 mission quizzes</span>
     </a>
 
     <a class="tile t-project" href="https://www.autoboticedu.com/intermediate-my-project" target="_top">
@@ -193,6 +193,25 @@ try{
   setTimeout(function(){
     try{ parent.postMessage({source:'home-ready'},'*'); }catch(e){}
   },500);
+  /* live counts: read sibling hub files in this same repo (same origin, no CORS).
+     If anything fails, the hard-coded tag text stays — purely cosmetic upgrade. */
+  function setTag(id,txt){
+    var el=document.getElementById(id);
+    if(el && txt) el.textContent=txt;
+  }
+  fetch('lesson-hub.html',{cache:'no-store'}).then(function(r){
+    return r.ok ? r.text() : '';
+  }).then(function(t){
+    var m=t.match(/\["[0-9]+[AB]?","lesson-/g);
+    if(m && m.length) setTag('tagLessons', m.length+' missions');
+  }).catch(function(e){});
+  fetch('imcc-quiz-hub.html',{cache:'no-store'}).then(function(r){
+    return r.ok ? r.text() : '';
+  }).then(function(t){
+    var m=t.match(/"m[0-9][0-9.]*"\s*:\s*\{/g);
+    if(m && m.length) setTag('tagQuiz', m.length+' mission quizzes');
+  }).catch(function(e){});
+
   /* safety net: if target=_top is blocked by sandbox, force top navigation */
   document.querySelectorAll('a[target="_top"]').forEach(function(a){
     a.addEventListener('click',function(ev){
