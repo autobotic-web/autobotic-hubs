@@ -316,6 +316,37 @@ body.ready .reveal{opacity:1;transform:translateY(0)}
 </head>
 <body>
 
+<!-- ===================== GUARDIAN BLOCK =====================
+     Kept SEPARATE from the main script so it survives a corrupted Code-mode
+     paste or a syntax error in the main script. It owns the ready handshake
+     and surfaces errors visibly. The dashboard always renders sample data, so
+     a live-data problem shows as a small non-destructive top banner (and stays
+     silent when the file is opened directly, since sample data is expected). -->
+<script>
+(function(){
+  var bar=document.createElement('div');
+  bar.style.cssText='display:none;position:fixed;top:0;left:0;right:0;z-index:99999;'+
+    'padding:9px 14px;font:13px/1.45 system-ui,Arial,sans-serif;text-align:center;'+
+    'white-space:pre-wrap;background:#7f1d1d;color:#fecaca';
+  function mount(){ if(document.body) document.body.appendChild(bar); }
+  if(document.body) mount(); else window.addEventListener('DOMContentLoaded',mount);
+  // surface any script error instead of failing silently
+  window.onerror=function(m,s,l,c){ bar.style.display='block';
+    bar.textContent='\u26d4 Dashboard script error: '+m+' (line '+l+(c?':'+c:'')+')'; return false; };
+  // own the ready handshake (works even if the main script breaks)
+  window.__gotData=false;
+  var embedded=false; try{ embedded=(window.parent && window.parent!==window); }catch(e){ embedded=true; }
+  var ping=setInterval(function(){ if(window.__gotData){ clearInterval(ping); return; }
+    try{ parent.postMessage({source:'dashboard-ready'},'*'); }catch(e){} },700);
+  // if embedded but no live data after 8s, show a gentle note (skip on direct open)
+  setTimeout(function(){ if(window.__gotData||!embedded) return;
+    bar.style.background='#78350f'; bar.style.color='#fde68a'; bar.style.display='block';
+    bar.textContent='\u26a0 Showing sample data \u2014 live data not received. '+
+      'Check: embed ID #dashFrame \u00b7 page-dashboard.js block pasted \u00b7 site Published.';
+  },8000);
+})();
+</script>
+
 <div class="ambient" aria-hidden="true">
   <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
 </div>
@@ -1050,17 +1081,12 @@ function fromBadges(counts){
 window.addEventListener('message',function(e){
   var d=e.data; if(!d||typeof d!=='object')return;
   if(d.source==='parent-summary'){window.__gotData=true;if(!d.error)fromParentSummary(d);}
-  else if(d.source==='leaderboard'&&Array.isArray(d.top))fromLeaderboard(d.top);
-  else if(d.source==='badges-progress'&&d.badgeCounts)fromBadges(d.badgeCounts);
+  else if(d.source==='leaderboard'&&Array.isArray(d.top)){window.__gotData=true;fromLeaderboard(d.top);}
+  else if(d.source==='badges-progress'&&d.badgeCounts){window.__gotData=true;fromBadges(d.badgeCounts);}
 });
 
-/* ready handshake — distinct `dashboard-ready` source so this new #dashFrame
-   embed never collides with the existing #summaryFrame on the same page */
-window.__gotData=false;
-var ping=setInterval(function(){
-  if(window.__gotData){clearInterval(ping);return;}
-  try{parent.postMessage({source:'dashboard-ready'},'*');}catch(e){}
-},700);
+/* ready handshake + error guardian live in the SEPARATE guardian <script>
+   near the top of <body> (Code-mode paste / runtime-error safety). */
 })();
 </script>
 </body>
