@@ -144,6 +144,18 @@
   .bline:hover{background:rgba(255,255,255,.12);border-color:var(--p2)}
   .bline.found{background:rgba(52,211,153,.18);border-color:var(--ok)}
   .bline.miss{background:rgba(251,113,133,.2)}
+
+/* === mobile-patch-20260611: small-screen support === */
+html,body{overflow-x:clip}
+@media (max-width:640px){
+  .wrap{padding:32px 14px 48px}
+  .branches{grid-template-columns:1fr}
+  .sorter{grid-template-columns:1fr}
+  .match{grid-template-columns:1fr}
+  .lab .bar,.cmd .bar{flex-wrap:wrap}
+  #xp-hud{top:8px;left:8px;padding:6px 10px;gap:7px;font-size:13px}
+}
+/* === end mobile-patch-20260611 === */
 </style><style>:root{--p1:#34d399;--p2:#f59e0b}</style>
 <style id="l21-track">
   .tkwrap{display:flex;flex-direction:column;gap:10px;align-items:center}

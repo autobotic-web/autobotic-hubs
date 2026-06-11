@@ -144,6 +144,18 @@
   .bline:hover{background:rgba(255,255,255,.12);border-color:var(--p2)}
   .bline.found{background:rgba(52,211,153,.18);border-color:var(--ok)}
   .bline.miss{background:rgba(251,113,133,.2)}
+
+/* === mobile-patch-20260611: small-screen support === */
+html,body{overflow-x:clip}
+@media (max-width:640px){
+  .wrap{padding:32px 14px 48px}
+  .branches{grid-template-columns:1fr}
+  .sorter{grid-template-columns:1fr}
+  .match{grid-template-columns:1fr}
+  .lab .bar,.cmd .bar{flex-wrap:wrap}
+  #xp-hud{top:8px;left:8px;padding:6px 10px;gap:7px;font-size:13px}
+}
+/* === end mobile-patch-20260611 === */
 </style><style>:root{--p1:#14b8a6;--p2:#22d3ee}</style>
 <style id="neon-arcade">
 /* ===== NEON ARCADE overlay (Style A) — engine untouched, uses each lesson's --p1/--p2 ===== */
@@ -244,6 +256,7 @@ p,li{color:#e9e3fb}
       <div class="callout tip"><b></b><b style="display:inline">🌍 Where you've met this before:</b> a car's <b>parking sensor</b> that beeps faster as you near a wall, a <b>bat</b> hunting in the dark, and a <b>submarine's sonar</b> all do the exact same trick you're about to code — fire a sound, time the echo, work out the distance.</div>
     </div>
     <p class="stdtag" style="color:var(--muted);font-size:12px;text-align:center;margin:14px 0 4px">📚 Standards: AI4K12 Big Idea 1 (Perception) · UNESCO AI (Apply) · CSTA Data &amp; Analysis · KSSM Science &amp; Maths: speed, distance, time</p>
+    <div class="callout tip"><b>🎯 What you'll be able to do</b>By the end you can: (1) <b>read a live distance</b> from the ultrasonic sensor; (2) <b>react to it</b> (e.g. alert when something's close); (3) <b>debug</b> a distance reading and explain the TRIG/ECHO idea. <span style="display:block;margin-top:4px">💼 <b>Real world:</b> distance sensing runs parking sensors, self-driving cars and robots — jobs like robotics engineer, automotive engineer and sensor-fusion developer.</span></div>
     <div class="callout tip"><b>🧠 This + AI</b>Measuring distance is <b>perception</b> — how a machine senses the world (AI4K12 Big Idea 1). Self-driving cars combine sensors like this to "see" how far away things are. You're building the robot's sense of distance — the <b>perceive</b> step of perceive → reason → act.</div>
     <div class="callout try"><b>🔮 Think &amp; Predict (before you build)</b>A bat squeaks and hears the echo come back very quickly. Is the wall <b>near</b> or <b>far</b>? And if the echo takes a long time to return — near or far? Say your guess out loud to your partner, then jot it in your Mission Log at the end.</div>
     <div class="callout rule"><b>✅ Minimum win for today</b>By the end, everyone leaves with a program that <b>prints the distance in cm</b> and updates as you move your hand. Extra LED/buzzer alerts are bonus challenges.</div>
@@ -529,6 +542,7 @@ except KeyboardInterrupt:
       <div id="final-xp"></div><div class="badges" id="badge-wall"></div>
       <p class="lead">You measured distance with sound — the same trick bats and parking sensors use.</p>
       <div class="mascot"><div class="face">🤖</div><div class="bubble">Mission complete — awesome work! Ready for the next one? 🚀</div></div>
+      <div class="callout rule" style="text-align:left"><b>✅ Did you nail it?</b>You've got it if you can: <b>read a live distance in cm</b> · <b>make something react when an object is close</b> · <b>explain what TRIG and ECHO do and fix a wrong reading</b>. Not yet? Scroll back to that part and try again — that's exactly what great engineers do.</div>
       <h3>📓 Mission Log — type your answers here</h3>
       <p style="max-width:560px;margin:0 auto 10px;color:var(--muted);font-size:14px">Your answers are saved to <b>your dashboard</b> — your parents can see what you built and fixed. Short honest answers beat long perfect ones. (+15 XP)</p>
       <div class="mlog">
