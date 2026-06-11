@@ -125,7 +125,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
   Pick a door, engineer. 🤖</p>
 
   <div class="grid">
-    <a class="tile t-lessons" href="https://www.autoboticedu.com/intermediate-lessons" target="_top">
+    <a class="tile t-lessons" href="https://www.autoboticedu.com/intermediate-lessons" target="_blank" rel="noopener">
       <div class="icon">📚</div>
       <h2>Lessons <span class="arrow">→</span></h2>
       <p>Your interactive missions — Python, GPIO, sensors, motors and OiviO Pi.
@@ -133,7 +133,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
       <span class="tag" id="tagLessons">22 missions</span>
     </a>
 
-    <a class="tile t-imcc" href="https://www.autoboticedu.com/intermediate-imcc-quiz" target="_top">
+    <a class="tile t-imcc" href="https://www.autoboticedu.com/intermediate-imcc-quiz" target="_blank" rel="noopener">
       <div class="icon">🏁</div>
       <h2>IMCC Quiz <span class="arrow">→</span></h2>
       <p>Test your competition knowledge — line following, obstacle avoidance,
@@ -141,7 +141,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
       <span class="tag" id="tagQuiz">9 mission quizzes</span>
     </a>
 
-    <a class="tile t-project" href="https://www.autoboticedu.com/intermediate-my-project" target="_top">
+    <a class="tile t-project" href="https://www.autoboticedu.com/intermediate-my-project" target="_blank" rel="noopener">
       <div class="icon">🚀</div>
       <h2>My Project <span class="arrow">→</span></h2>
       <p>Your engineering workspace — plan, budget and logsheet for each project,
@@ -149,7 +149,7 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
       <span class="tag">Project workspace</span>
     </a>
 
-    <a class="tile t-dash" href="https://www.autoboticedu.com/intermediate-dashboard" target="_top">
+    <a class="tile t-dash" href="https://www.autoboticedu.com/intermediate-dashboard" target="_blank" rel="noopener">
       <div class="icon">📊</div>
       <h2>My Dashboard <span class="arrow">→</span></h2>
       <p>Your XP, badges, skills profile, IMCC scores and leaderboard —
@@ -160,22 +160,22 @@ h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:tex
 
   <div class="more-label">More</div>
   <div class="row">
-    <a class="mini" href="https://www.autoboticedu.com/certificate" target="_top">
+    <a class="mini" href="https://www.autoboticedu.com/certificate" target="_blank" rel="noopener">
       <span class="micon">🏆</span>
       <span><b>Certificate</b><span>See how close you are to earning your course certificate</span></span>
       <span class="arrow">→</span>
     </a>
-    <a class="mini" href="https://www.autoboticedu.com/intermediate-best-video" target="_top">
+    <a class="mini" href="https://www.autoboticedu.com/intermediate-best-video" target="_blank" rel="noopener">
       <span class="micon">🎬</span>
       <span><b>Best Video</b><span>Watch your squad's project videos and vote for this month's best</span></span>
       <span class="arrow">→</span>
     </a>
-    <a class="mini" href="https://www.autoboticedu.com/group-page/autobotic-intermediate-group/discussion" target="_top">
+    <a class="mini" href="https://www.autoboticedu.com/group-page/autobotic-intermediate-group/discussion" target="_blank" rel="noopener">
       <span class="micon">🤝</span>
       <span><b>Squad Discussion</b><span>Share builds, ask questions and cheer your squad on</span></span>
       <span class="arrow">→</span>
     </a>
-    <a class="mini" href="https://www.autoboticedu.com/how-scoring-works" target="_top">
+    <a class="mini" href="https://www.autoboticedu.com/how-scoring-works" target="_blank" rel="noopener">
       <span class="micon">⚖️</span>
       <span><b>How Scoring Works</b><span>XP, badges, rubrics — see exactly how you earn every point</span></span>
       <span class="arrow">→</span>
@@ -211,18 +211,6 @@ try{
     var m=t.match(/"m[0-9][0-9.]*"\s*:\s*\{/g);
     if(m && m.length) setTag('tagQuiz', m.length+' mission quizzes');
   }).catch(function(e){});
-
-  /* safety net: if target=_top is blocked by sandbox, force top navigation */
-  document.querySelectorAll('a[target="_top"]').forEach(function(a){
-    a.addEventListener('click',function(ev){
-      try{
-        if(window.top && window.top.location){
-          ev.preventDefault();
-          window.top.location.href = a.href;
-        }
-      }catch(e){ /* cross-origin top blocked — let target=_top do its job */ }
-    });
-  });
 }catch(e){}
 </script>
 </body>
