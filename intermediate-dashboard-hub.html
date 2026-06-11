@@ -259,6 +259,7 @@ td.ctr{text-align:center}
   border-radius:99px;transition:width 1.2s var(--ease)}
 .plog{margin-top:11px;font-size:12px;color:var(--muted);line-height:1.55}
 .muted{color:var(--muted)}
+.search-dim{opacity:.14;filter:grayscale(.55);transition:opacity .25s,filter .25s}
 
 /* entrance */
 .reveal{opacity:0;transform:translateY(22px);
@@ -301,6 +302,7 @@ body.ready .reveal{opacity:1;transform:translateY(0)}
   .section-label{color:#6a7188}
   .kpis,.grid-main,.grid-half,.proj-grid{gap:10px}
   a{color:inherit}
+  .search-dim{opacity:1!important;filter:none!important}
 }
 
 @media (max-width:1100px){
@@ -383,7 +385,7 @@ body.ready .reveal{opacity:1;transform:translateY(0)}
   <header class="topbar">
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="searchBox" type="text" placeholder="Search activity, missions, badges…" aria-label="Search">
+      <input id="searchBox" type="text" placeholder="Search lessons, missions, badges, projects…" aria-label="Search">
     </div>
     <div class="top-right">
       <button class="bell" aria-label="Notifications">
@@ -599,6 +601,13 @@ var state = {
 /* ---------------- utils ---------------- */
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+var TITLES={'lesson-1a-ai-ethics':'Lesson 1A · AI Ethics & Prompting','lesson-1b-pi-setup':'Lesson 1B · Pi Setup','lesson-2-linux-cli':'Lesson 2 · Linux Command Line','lesson-3-python-basics':'Lesson 3 · Python Basics','lesson-4-blink-led':'Lesson 4 · Blink an LED','lesson-5-buzzer':'Lesson 5 · Buzzer','lesson-6-button-matrix':'Lesson 6 · Button Matrix','lesson-7-ldr':'Lesson 7 · LDR Light Sensor','lesson-8-pir-motion':'Lesson 8 · PIR Motion','lesson-9-vibration':'Lesson 9 · Vibration Motor','lesson-10-sound':'Lesson 10 · Sound Detector','lesson-11-7segment':'Lesson 11 · 7-Segment Display','lesson-12-led-matrix':'Lesson 12 · LED Matrix','lesson-13-lcd1602':'Lesson 13 · LCD 1602','lesson-14-ws2812b':'Lesson 14 · RGB LED Strip','lesson-15-ultrasonic':'Lesson 15 · Ultrasonic Distance','lesson-16-color-sensor':'Lesson 16 · Colour Sensor','lesson-17-servo':'Lesson 17 · Servo Motor','lesson-18-dc-motor':'Lesson 18 · DC Motor','lesson-19-opencv-camera':'Lesson 19 · Camera & OpenCV','lesson-20-hsv-tracker':'Lesson 20 · HSV Tracker','lesson-21-object-following':'Lesson 21 · Object Following'};
+function lessonName(l){
+  if(!l)return 'Lesson';
+  var id=String(l.lessonId||'');
+  if(id.indexOf('best-video-')===0)return 'Best Video of the Month';
+  return l.lessonTitle||TITLES[id]||(id?('Lesson '+id.replace('lesson-','').split('-').join(' ')):'Lesson');
+}
 function easeOut(t){return 1-Math.pow(1-t,3);}
 var FINAL=false; // set true to skip animations (print / reduced motion)
 function instant(){return REDUCED||FINAL;}
@@ -913,16 +922,38 @@ document.querySelectorAll('.nav-btn').forEach(function(btn){
     if(el)el.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});
   });
 });
-var sb=$('searchBox');
-if(sb)sb.addEventListener('input',function(){
-  var q=sb.value.trim().toLowerCase();
-  document.querySelectorAll('#activityBody tr').forEach(function(tr){
-    tr.style.display=(!q||tr.textContent.toLowerCase().indexOf(q)>-1)?'':'none';
+/* ---------------- global search across all sections ---------------- */
+(function(){
+  var sb=$('searchBox'); if(!sb)return;
+  var GROUPS=[['#activityBody tr','row'],['#imccBody tr','row'],
+    ['#lbWrap .lrow','dim'],['#badgeRow .bchip','dim'],
+    ['#projGrid .card','dim'],['#skillCols .colu','dim']];
+  var wrap=sb.closest('.search'), bar=wrap?wrap.parentNode:null;
+  var count=document.createElement('span'); count.id='searchCount';
+  count.style.cssText='font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;opacity:0;transition:opacity .2s';
+  if(bar&&wrap)bar.insertBefore(count,wrap.nextSibling);
+  function clearAll(){
+    GROUPS.forEach(function(g){document.querySelectorAll(g[0]).forEach(function(el){
+      el.style.display=''; el.classList.remove('search-dim');});});
+    count.style.opacity='0';
+  }
+  sb.addEventListener('input',function(){
+    var q=sb.value.trim().toLowerCase();
+    if(!q){clearAll();return;}
+    var hits=0, first=null;
+    GROUPS.forEach(function(g){
+      document.querySelectorAll(g[0]).forEach(function(el){
+        var match=el.textContent.toLowerCase().indexOf(q)>-1;
+        if(match){hits++; if(!first)first=el;}
+        if(g[1]==='row'){el.style.display=match?'':'none';}
+        else{el.classList.toggle('search-dim',!match);}
+      });
+    });
+    count.textContent=hits+(hits===1?' match':' matches');
+    count.style.opacity='1';
+    if(first&&first.scrollIntoView){try{first.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'center'});}catch(e){}}
   });
-  document.querySelectorAll('#imccBody tr').forEach(function(tr){
-    tr.style.display=(!q||tr.textContent.toLowerCase().indexOf(q)>-1)?'':'none';
-  });
-});
+})();
 
 /* ==========================================================================
    LIVE DATA WIRING — same protocol as the existing hubs
@@ -1055,7 +1086,7 @@ function fromParentSummary(p){
       state.activity=recent.map(function(l){
         var best=String(l.lessonId||'').indexOf('best-video-')===0;
         return {ico:best?'🏆':'🎓',
-          t:best?'Best Video of the Month':(l.lessonTitle||l.lessonId||'Lesson'),
+          t:lessonName(l),
           d:best?'voted by classmates':((l.badges||[]).length?'completed · badges earned':'completed'),
           xp:best?100:(Number(l.videoXp)||0),
           when:fmtWhen(l.updatedAt)};
