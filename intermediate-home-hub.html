@@ -32,7 +32,7 @@ body{
   font-family:'Inter',system-ui,sans-serif;color:var(--txt);
   background:
     radial-gradient(1100px 520px at 70% -10%, rgba(79,124,255,.22), transparent 60%),
-    radial-gradient(900px 520px at 8% 110%, rgba(157,92,255,.18), transparent 60%),
+    radial-gradient(900px 520px at 8% 110%, rgba(108,58,196,.18), transparent 60%),
     linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
   min-height:100vh;padding:34px 22px 44px;
   position:relative;overflow-x:hidden;
@@ -54,12 +54,12 @@ body::after{
   content:'';position:fixed;inset:-25%;pointer-events:none;z-index:0;
   background:
     /* bright galactic core */
-    radial-gradient(38% 30% at 72% 34%, rgba(170,120,255,.34), transparent 68%),
+    radial-gradient(38% 30% at 72% 34%, rgba(118,72,206,.34), transparent 68%),
     radial-gradient(34% 26% at 24% 30%, rgba(34,211,238,.22), transparent 70%),
     radial-gradient(40% 30% at 55% 66%, rgba(79,124,255,.26), transparent 72%),
     radial-gradient(30% 24% at 86% 78%, rgba(251,113,133,.18), transparent 70%),
     /* diagonal milky-way band */
-    linear-gradient(122deg, transparent 30%, rgba(140,110,255,.16) 46%,
+    linear-gradient(122deg, transparent 30%, rgba(98,68,200,.16) 46%,
       rgba(80,180,255,.14) 54%, transparent 70%);
   filter:blur(8px) saturate(1.25);
   animation:nebula 22s ease-in-out infinite alternate;
@@ -238,7 +238,7 @@ h1 .grad{
 <div class="wrap">
   <div class="badge fx d1"><span class="dot"></span>Autobotic · Intermediate
     <span class="ok">· Systems online</span></div>
-  <h1 class="fx d2">Your <span class="grad">AI Mission Control</span></h1>
+  <h1 class="fx d2">Your <span class="grad">Learning Hub</span></h1>
   <p class="term fx d3"><span class="pre">&gt;&nbsp;</span><span id="typed"></span><span class="caret"></span></p>
 
   <div class="grid">
@@ -486,14 +486,14 @@ try{
         /* bright galactic core */
         var coreX=W*0.7+drift, coreY=H*0.36;
         var core=cx.createRadialGradient(coreX,coreY,0,coreX,coreY,Math.max(W,H)*0.30);
-        core.addColorStop(0,'rgba(198,160,255,0.26)');
-        core.addColorStop(0.45,'rgba(130,100,230,0.12)');
-        core.addColorStop(1,'rgba(130,100,230,0)');
+        core.addColorStop(0,'rgba(150,108,224,0.26)');
+        core.addColorStop(0.45,'rgba(96,72,200,0.12)');
+        core.addColorStop(1,'rgba(96,72,200,0)');
         cx.fillStyle=core; cx.fillRect(0,0,W,H);
         /* coloured blobs strung along the diagonal band */
         var bx=[0.12,0.32,0.52,0.72,0.90];
         var by=[0.80,0.64,0.48,0.32,0.18];
-        var bcol=['34,211,238','79,124,255','157,92,255','120,90,230','251,113,133'];
+        var bcol=['34,211,238','79,124,255','120,70,206','96,72,200','251,113,133'];
         for(var b=0;b<bx.length;b++){
           var gx=bx[b]*W+drift, gy=by[b]*H;
           var rr=Math.max(W,H)*0.24;
