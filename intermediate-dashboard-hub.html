@@ -735,6 +735,7 @@ function renderKpis(){
 function renderArea(){
   var svg=$('areaSvg'); if(!svg)return;
   var W=760,H=260,pL=10,pR=10,pT=18,pB=28,s=state.xpSeries;
+  if(s.length<2)return; // need at least 2 points to draw a line
   var max=(Math.max.apply(null,s.map(function(d){return d.xp;}))||1)*1.1;
   var iw=W-pL-pR,ih=H-pT-pB;
   var pts=s.map(function(d,i){return [pL+i*iw/(s.length-1), pT+ih-(d.xp/max)*ih];});
@@ -1133,6 +1134,14 @@ function fromParentSummary(p){
         return {label:lab,xp:Math.round(cum)};
       });
       state.xpSeries.push({label:'Today',xp:state.totalXp});
+    } else if(byDate.length===1){
+      // Single lesson: anchor at 0 on that date, then rise to today
+      var d0=new Date(byDate[0].updatedAt||0);
+      var lab0=isNaN(d0)?'Start':d0.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      state.xpSeries=[{label:lab0,xp:0},{label:'Today',xp:state.totalXp}];
+    } else if(state.totalXp>0){
+      // XP but no finished lessons (e.g. partial progress): flat line
+      state.xpSeries=[{label:'Start',xp:0},{label:'Today',xp:state.totalXp}];
     }
 
     // activity feed
