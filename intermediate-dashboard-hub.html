@@ -668,11 +668,13 @@ function instant(){return REDUCED||FINAL;}
 function countUp(el,to,dur){
   if(!el)return; to=Math.round(to);
   if(instant()){el.textContent=to;return;}
-  // Cancel any in-flight animation on this element before starting a new one.
+  // If already animating toward this exact target, let it finish — don't restart.
+  if(el.__cuTarget===to)return;
+  el.__cuTarget=to;
   var gen=(el.__cuGen=(el.__cuGen||0)+1);
   var t0=performance.now();
   (function step(now){
-    if(el.__cuGen!==gen)return; // superseded — stop
+    if(el.__cuGen!==gen)return; // superseded by a different target — stop
     var p=Math.min(1,(now-t0)/dur);
     el.textContent=Math.round(to*easeOut(p));
     if(p<1)requestAnimationFrame(step);
