@@ -958,13 +958,7 @@ function start(){
       seq.shift();
       sparkline($('sparkXp'),seq,'#4f7cff');
     },3600);
-    // live feel: XP ticks up every 5s with a green flash
-    setInterval(function(){
-      state.totalXp+=Math.round(2+Math.random()*7);
-      var el=$('kpiXp'); if(el)el.textContent=state.totalXp;
-      var card=$('kpiXpCard');
-      if(card){card.classList.remove('flash');void card.offsetWidth;card.classList.add('flash');}
-    },5000);
+    // Removed: fake XP ticker was inflating real student XP values.
   }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);
