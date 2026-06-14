@@ -223,6 +223,16 @@
       '<label>Next step</label><input type="text" id="l-next">'+
       '<button class="btn" onclick="addLog(this)">➕ Add log entry</button><span class="saved"></span>')+'</div>';
     m.appendChild(c4);
+
+    // 5. Showcase video (posted from the group; reviewed by the teacher for skills + contest)
+    const c5=document.createElement('div'); c5.className='sect';
+    c5.innerHTML='<div class="card"><h3>🎬 Showcase video</h3>'+
+      '<div class="sub">Post your build video to your group, then paste the link here. Your teacher reviews it for your engineering-skill scores, and it can enter Best Video of the Month.</div>'+
+      '<label>Video link (from your group)</label>'+
+      '<input type="text" id="v-link" placeholder="https://… your group video link" value="'+esc(proj.videoLink||'')+'">'+
+      '<button class="btn" onclick="saveProjectVideo(this)">💾 Save video link</button><span class="saved" id="v-saved"></span></div>';
+    m.appendChild(c5);
+
     renderLogList(log);
     budTotal();
     DIRTY=false;
@@ -274,6 +284,13 @@
     log.push({date:new Date().toISOString().slice(0,10), did:did, problem:val('l-problem'), next:val('l-next')});
     post('logsheet',log);
   }
+  function saveProjectVideo(btn){
+    const link=val('v-link');
+    const proj=findProj(SEL); const det=pj(proj?proj.details:'{}',{});
+    const s=document.getElementById('v-saved'); if(s) s.textContent='Saving…';
+    parent.postMessage({source:'project-video-post', projectId:SEL,
+      refTitle:(det.title||('Project '+SEL)), link:link}, '*');
+  }
   function val(id){ const el=document.getElementById(id); return el?el.value.trim().slice(0,1000):''; }
   function post(section,data){
     window._pendingSave={section:section,data:data,projectId:SEL};
@@ -297,6 +314,12 @@
       SEL=SELNEXT||SEL||PAY.activeId||projects[0].projectId; SELNEXT=null;
       if(!findProj(SEL)) SEL=PAY.activeId||projects[0].projectId;
       renderAll();
+    }
+    if(d.source==='project-video-saved'){
+      const s=document.getElementById('v-saved');
+      if(s) s.textContent = d.ok ? '✅ Saved — sent to your teacher' : '⛔ '+(d.error||'failed');
+      const proj=findProj(d.projectId); if(proj && d.ok) proj.videoLink = d.link||'';
+      return;
     }
     if(d.source==='project-saved'){
       const btn=window._lastBtn;

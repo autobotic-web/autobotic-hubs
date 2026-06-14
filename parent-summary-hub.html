@@ -203,14 +203,14 @@
       (p.teacherNoteAt?'<div class="when">'+fmtDate(p.teacherNoteAt)+'</div>':'')+'</div>';
   }
 
-  function renderSkills(lessons){
+  function renderSkills(videos){
     const el=document.getElementById('skills');
     const rubrics=[];
-    (lessons||[]).forEach(l=>{ const r=pj(l.videoRubric,null); if(r) rubrics.push(r); });
+    (videos||[]).forEach(v=>{ const r=pj(v.videoRubric,null); if(r) rubrics.push(r); });
     if(!rubrics.length){ el.style.display='none'; return []; }
     el.style.display='block';
-    let h='<h3>🎬 IMCC build videos &amp; engineering skills</h3><div class="card">'+
-      '<div class="hintline" style="margin:0 0 8px">Build videos are posted for IMCC missions and reviewed by the teacher. '+
+    let h='<h3>🎬 Build videos &amp; engineering skills</h3><div class="card">'+
+      '<div class="hintline" style="margin:0 0 8px">Build videos are posted from lessons, projects or IMCC missions and reviewed by the teacher. '+
       'Average of '+rubrics.length+' reviewed build video'+(rubrics.length===1?'':'s')+' (each skill scored 0–6).</div>';
     Object.keys(SKILL_NAMES).forEach(k=>{
       const vals=rubrics.map(r=>r[k]).filter(v=>v!==undefined).map(Number);
@@ -220,7 +220,6 @@
         '<span class="bar"><i style="width:'+Math.round(avg/6*100)+'%"></i></span>'+
         '<span class="v">'+avg.toFixed(1)+'/6</span></div>';
     });
-    if(rubrics.length<3) h+='<div class="hintline">A fuller picture appears after 3 reviewed videos.</div>';
     el.innerHTML=h+'</div>';
     return [rubrics.length+' build video'+(rubrics.length===1?'':'s')+' reviewed by the teacher'];
   }
@@ -312,7 +311,7 @@
     document.getElementById('repdate').textContent='Progress report · generated '+fmtDate(new Date())+' · Autobotic STEM EDU';
 
     renderTeacherNote(payload);
-    const skillLines=renderSkills(payload.lessons||[]);
+    const skillLines=renderSkills(payload.videos||[]);
     const projLines=renderProjects(payload.projects);
     const imccLines=renderImcc(payload.imcc);
     renderRecognition(payload);
@@ -367,7 +366,7 @@
     t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
     if(lessonBlocks.length>3) t+='\n   …and '+(lessonBlocks.length-3)+' more on the full report';
     if(imccLines&&imccLines.length) t+='\n\n*IMCC robotics:* '+imccLines.join('; ');
-    if(skillLines&&skillLines.length) t+='\n*IMCC build videos:* '+skillLines.join('; ');
+    if(skillLines&&skillLines.length) t+='\n*Build videos:* '+skillLines.join('; ');
     if(projLines&&projLines.length) t+='\n\n*Projects:*\n'+projLines.join('\n');
     latestText=t;
     const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);

@@ -595,7 +595,7 @@ html,body{overflow-x:clip}
 (function(){
 "use strict";
 var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-var LESSON_TOTAL = 22, BADGE_TOTAL = 28, IMCC_TOTAL = 9, SKILL_MAX = 6, SKILL_UNLOCK = 3;
+var LESSON_TOTAL = 22, BADGE_TOTAL = 28, IMCC_TOTAL = 9, SKILL_MAX = 6, SKILL_UNLOCK = 1;
 
 /* ---------------- SAMPLE DATA (real learning snapshot, 11 Jun 2026) ---------------- */
 var state = {
@@ -1053,10 +1053,10 @@ function fromParentSummary(p){
       state.badgesExtra=Math.max(0,state.badgesEarned-state.badges.length);
     }
 
-    // skills: average of last 5 video rubrics; locked under 3 reviews
-    var rubrics=lessons.map(function(l){
-      var r=safe(l.videoRubric,null);
-      return (r&&typeof r==='object')?{r:r,t:new Date(l.updatedAt||0)}:null;
+    // skills: average of last 5 build-video rubrics (lesson/project/imcc); unlocks at 1 review
+    var rubrics=(p.videos||[]).map(function(v){
+      var r=safe(v.videoRubric,null);
+      return (r&&typeof r==='object')?{r:r,t:new Date(v.reviewedAt||0)}:null;
     }).filter(Boolean).sort(function(a,b){return a.t-b.t;});
     state.skillReviews=rubrics.length;
     var last5=rubrics.slice(-5);
@@ -1113,7 +1113,7 @@ function fromParentSummary(p){
     }
 
     // XP sources from available signals
-    var videoXp=lessons.reduce(function(a,l){return a+(Number(l.videoXp)||0);},0);
+    var videoXp=(p.videos||[]).reduce(function(a,v){return a+(Number(v.videoXp)||0);},0);
     var bonus=wins.length*100;
     var lessonXp=Math.max(0,state.totalXp-videoXp-bonus);
     state.xpSources=[

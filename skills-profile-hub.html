@@ -47,7 +47,7 @@
     {id:'problem',      name:'🐛 Problem-solving'},
     {id:'creativity',   name:'✨ Creativity'}
   ];
-  const UNLOCK_AT = 3;      // reviews needed to show the profile
+  const UNLOCK_AT = 1;      // reviews needed to show the profile
   const WINDOW = 5;         // average over the last N reviews (old scores age out)
 
   function levelWord(avg){
@@ -60,9 +60,9 @@
 
   function render(payload){
     const card=document.getElementById('card');
-    // reviews = lessons with a parsable rubric, oldest → newest
-    const reviews=(payload.lessons||[])
-      .map(l=>{ try{ const r=JSON.parse(l.videoRubric||''); return r&&typeof r==='object'?{r, t:new Date(l.updatedAt||0)}:null; }catch(e){ return null; } })
+    // reviews = build videos (lesson/project/imcc) with a parsable rubric, oldest → newest
+    const reviews=(payload.videos||[])
+      .map(v=>{ try{ const r=JSON.parse(v.videoRubric||''); return r&&typeof r==='object'?{r, t:new Date(v.reviewedAt||0)}:null; }catch(e){ return null; } })
       .filter(Boolean)
       .sort((a,b)=>a.t-b.t);
 
