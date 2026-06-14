@@ -1150,9 +1150,11 @@ function fromParentSummary(p){
     if(recent.length){
       state.activity=recent.map(function(l){
         var best=String(l.lessonId||'').indexOf('best-video-')===0;
+        var base=best?'voted by classmates':((l.badges||[]).length?'completed · badges earned':'completed');
+        var tc=String(l.teacherComment||'').trim();
         return {ico:best?'🏆':'🎓',
           t:lessonName(l),
-          d:best?'voted by classmates':((l.badges||[]).length?'completed · badges earned':'completed'),
+          d:base+(tc?' · 🧑‍🏫 “'+tc+'”':''),
           xp:best?100:(Number(l.videoXp)||0),
           when:fmtWhen(l.updatedAt)};
       });

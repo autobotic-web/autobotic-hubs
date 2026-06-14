@@ -141,8 +141,8 @@
   <div class="sect" id="feedhead" style="display:none"><h3>📚 Lesson-by-lesson highlights</h3></div>
   <main class="list" id="list"><div class="empty">Loading progress…</div></main>
   <div class="sect" id="imcc" style="display:none"></div>
-  <div class="sect" id="projects" style="display:none"></div>
   <div class="sect" id="skills" style="display:none;margin-bottom:30px"></div>
+  <div class="sect" id="projects" style="display:none"></div>
 
 <script>
   /* Parent-language summary per lesson: what the child CAN NOW DO, no jargon. */
@@ -207,10 +207,11 @@
     const el=document.getElementById('skills');
     const rubrics=[];
     (lessons||[]).forEach(l=>{ const r=pj(l.videoRubric,null); if(r) rubrics.push(r); });
-    if(!rubrics.length){ el.style.display='none'; return; }
+    if(!rubrics.length){ el.style.display='none'; return []; }
     el.style.display='block';
-    let h='<h3>🛠 Engineering skills</h3><div class="card">'+
-      '<div class="hintline" style="margin:0 0 8px">Average of the teacher’s reviews of '+rubrics.length+' build video'+(rubrics.length===1?'':'s')+' (each skill scored 0–6).</div>';
+    let h='<h3>🎬 IMCC build videos &amp; engineering skills</h3><div class="card">'+
+      '<div class="hintline" style="margin:0 0 8px">Build videos are posted for IMCC missions and reviewed by the teacher. '+
+      'Average of '+rubrics.length+' reviewed build video'+(rubrics.length===1?'':'s')+' (each skill scored 0–6).</div>';
     Object.keys(SKILL_NAMES).forEach(k=>{
       const vals=rubrics.map(r=>r[k]).filter(v=>v!==undefined).map(Number);
       if(!vals.length) return;
@@ -221,6 +222,7 @@
     });
     if(rubrics.length<3) h+='<div class="hintline">A fuller picture appears after 3 reviewed videos.</div>';
     el.innerHTML=h+'</div>';
+    return [rubrics.length+' build video'+(rubrics.length===1?'':'s')+' reviewed by the teacher'];
   }
 
   function renderProjects(projects){
@@ -310,7 +312,7 @@
     document.getElementById('repdate').textContent='Progress report · generated '+fmtDate(new Date())+' · Autobotic STEM EDU';
 
     renderTeacherNote(payload);
-    renderSkills(payload.lessons||[]);
+    const skillLines=renderSkills(payload.lessons||[]);
     const projLines=renderProjects(payload.projects);
     const imccLines=renderImcc(payload.imcc);
     renderRecognition(payload);
@@ -320,8 +322,6 @@
     if(!lessons.length){ list.innerHTML='<div class="empty">No completed lessons yet — the first update will appear after the first finished mission! 🚀</div>'; return; }
     // Share text: NO emoji (they corrupt to ? in the WhatsApp URL hand-off on some
     // devices). WhatsApp *asterisk bold* + plain hyphens only. One block per lesson.
-    const SKILL_PLAIN={presentation:'Presentation',hardware:'Hardware',coding:'Coding',
-      problem:'Problem-solving',creativity:'Creativity'};
     const waMonth=(id)=>{ const m=/best-video-(\d{4})-(\d{2})/.exec(id||''); if(!m) return '';
       const MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
       return MO[Number(m[2])-1]+' '+m[1]; };
@@ -333,12 +333,8 @@
         : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
       const title=l.lessonTitle||TITLES_FALLBACK(l.lessonId);
       const notes=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
-      if(Number(l.videoXp)>0) notes.push('🎬 build video reviewed by teacher · +'+l.videoXp+' XP'+(l.videoNote?' — “'+l.videoNote+'”':''));
-      const rub=pj(l.videoRubric,null);
-      if(rub){
-        const parts=Object.keys(SKILL_NAMES).filter(k=>rub[k]!==undefined).map(k=>SKILL_NAMES[k]+' '+rub[k]+'/6');
-        if(parts.length) notes.push('Skills: '+parts.join(' · '));
-      }
+      const hasScore=(l.quizScore!==undefined&&l.quizScore!==null&&l.quizScore!=='');
+      if(!best) notes.push('✅ quiz completed'+(hasScore?' · '+l.quizScore+'%':''));
       const ml=pj(l.missionLog,null);
       let own='';
       if(ml && (ml.built||ml.fixed||ml.broke)){
@@ -347,8 +343,10 @@
           (ml.broke||ml.fixed?'<div class="fixline">'+(ml.broke?'It broke: “'+esc(ml.broke)+'” — ':'')+(ml.fixed?'fixed it: “'+esc(ml.fixed)+'”':'')+'</div>':'')+
           '</div>';
       }
+      let tc='';
+      if(l.teacherComment){ tc='<div class="own">🧑‍🏫 <b>Teacher’s comment:</b><div>“'+esc(l.teacherComment)+'”</div></div>'; }
       const d=document.createElement('div'); d.className='item';
-      d.innerHTML='<div class="ico">'+s.ico+'</div><div><b>'+title+'</b><div class="what">'+s.what+'</div>'+own+
+      d.innerHTML='<div class="ico">'+s.ico+'</div><div><b>'+title+'</b><div class="what">'+s.what+'</div>'+own+tc+
         '<div class="meta">'+notes.map(n=>'<span class="tag">'+n+'</span>').join('')+(fmtDate(l.updatedAt)?'<span>'+fmtDate(l.updatedAt)+'</span>':'')+'</div></div>';
       list.appendChild(d);
       // plain-text block for WhatsApp/copy
@@ -356,13 +354,10 @@
         lessonBlocks.push(['- Best Video of the Month ('+waMonth(l.lessonId)+') — voted by classmates, +100 XP']);
       } else {
         const block=['- '+title+' — '+(ml&&ml.built? '"'+ml.built+'"' : s.what)];
+        block.push('   Quiz completed'+(hasScore?' ('+l.quizScore+'%)':''));
         const plainBadges=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
         if(plainBadges.length) block.push('   ('+plainBadges.join(', ')+')');
-        if(Number(l.videoXp)>0) block.push('   Build video reviewed by teacher: +'+l.videoXp+' XP'+(l.videoNote?' — "'+l.videoNote+'"':''));
-        if(rub){
-          const sp=Object.keys(SKILL_PLAIN).filter(k=>rub[k]!==undefined).map(k=>SKILL_PLAIN[k]+' '+rub[k]+'/6');
-          if(sp.length) block.push('   Skills: '+sp.join(', '));
-        }
+        if(l.teacherComment) block.push('   Teacher: "'+l.teacherComment+'"');
         lessonBlocks.push(block);
       }
     });
@@ -371,8 +366,9 @@
     t+='\n\n*Lessons:* '+realCount+' completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
     t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
     if(lessonBlocks.length>3) t+='\n   …and '+(lessonBlocks.length-3)+' more on the full report';
-    if(projLines&&projLines.length) t+='\n\n*Projects:*\n'+projLines.join('\n');
     if(imccLines&&imccLines.length) t+='\n\n*IMCC robotics:* '+imccLines.join('; ');
+    if(skillLines&&skillLines.length) t+='\n*IMCC build videos:* '+skillLines.join('; ');
+    if(projLines&&projLines.length) t+='\n\n*Projects:*\n'+projLines.join('\n');
     latestText=t;
     const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);
   }
