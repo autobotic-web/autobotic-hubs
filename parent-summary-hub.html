@@ -70,7 +70,21 @@
   .item .own b{color:#ffd64a}
   .item .own .fixline{margin-top:4px;color:#d9e2ff}
   .empty{text-align:center;color:#aab0e6;padding:40px 16px;font-size:15px}
+  .kpis-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:560px){.kpis-wrap{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:#1b1f44;border:1px solid #33386f;border-radius:14px;padding:12px 14px}
+  .kpi .lbl{font-size:11.5px;color:#aab0e6;font-weight:700;display:flex;align-items:center;gap:6px}
+  .kpi .val{font-size:26px;font-weight:900;color:#fff;margin-top:4px;line-height:1}
+  .kpi .val small{font-size:13px;color:#9fa6dd;font-weight:700}
+  .kpi .sub{font-size:11px;color:#5eead4;font-weight:700;margin-top:4px}
+  .xpcard{margin-top:10px;background:#1b1f44;border:1px solid #33386f;border-radius:16px;padding:14px 16px}
+  .xpcard .ttl{font-size:14px;font-weight:800;color:#9fd6ff;margin-bottom:2px}
+  .xpcard .meta{font-size:11.5px;color:#9fa6dd;margin-bottom:6px}
+  .xpcard svg{width:100%;height:72px;display:block;overflow:visible}
   @media print{
+    .kpi,.xpcard{background:#fff;border:1px solid #bbb;break-inside:avoid}
+    .kpi .val,.xpcard .ttl{color:#111}
+    .kpi .lbl,.kpi .sub,.xpcard .meta{color:#444}
     body{background:#fff;color:#111;padding:0;font-size:12px}
     header h2{-webkit-text-fill-color:#111;color:#111;background:none;font-size:26px}
     header p,#plnote{color:#444}
@@ -136,6 +150,7 @@
     <button id="printBtn" onclick="window.print()">🖨 Print / save PDF</button>
     <span id="copied">Copied!</span>
   </div>
+  <div class="sect" id="kpis" style="display:none"></div>
   <div class="sect" id="tnote" style="display:none"></div>
   <div class="sect" id="recog" style="display:none"></div>
   <div class="sect" id="feedhead" style="display:none"><h3>📚 Lesson-by-lesson highlights</h3></div>
@@ -301,6 +316,56 @@
       tags.map(t=>'<span class="tagbig">'+esc(t)+'</span>').join('')+'</div></div>';
   }
 
+  function sparkSVG(series, color){
+    if(!series.length) return '';
+    if(series.length===1) series=[0, series[0]];
+    const w=600,h=72,pad=5;
+    const max=Math.max.apply(null,series), min=Math.min.apply(null,series), rng=(max-min)||1;
+    const pts=series.map((v,i)=>[pad+i*(w-2*pad)/(series.length-1), h-pad-(v-min)/rng*(h-2*pad)]);
+    const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const area=line+' L'+pts[pts.length-1][0].toFixed(1)+' '+h+' L'+pts[0][0].toFixed(1)+' '+h+' Z';
+    const gid='sp'+Math.random().toString(36).slice(2,7);
+    return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+      '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0" stop-color="'+color+'" stop-opacity=".35"/>'+
+      '<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
+      '<path d="'+area+'" fill="url(#'+gid+')"/>'+
+      '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '<circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="4" fill="'+color+'"/></svg>';
+  }
+  function renderKpis(payload, lessons){
+    const el=document.getElementById('kpis');
+    const totalXp=payload.totalXp||0;
+    const lessonsDone=(payload.completedCount!==null&&payload.completedCount!==undefined)?payload.completedCount
+      :lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length;
+    const bset=new Set(); lessons.forEach(l=>(l.badges||[]).forEach(b=>bset.add(b)));
+    let isum=0,inum=0;
+    (payload.imcc||[]).forEach(m=>{ if(m.practicalScore!==null&&m.practicalScore!==undefined){
+      const q=(m.quizScore!==null&&m.quizScore!==undefined)?Math.round(m.quizScore/10):0; isum+=m.practicalScore+q; inum++; } });
+    const imccAvg=inum?Math.round(isum/inum):0;
+    if(!totalXp && !lessonsDone && !bset.size && !inum){ el.style.display='none'; return; }
+    // XP growth series — cumulative across lessons + reviewed videos, oldest → newest
+    const ev=[];
+    lessons.forEach(l=>{ if(l.updatedAt) ev.push({t:new Date(l.updatedAt), xp:Number(l.xp)||0}); });
+    (payload.videos||[]).forEach(v=>{ if(v.reviewedAt && Number(v.videoXp)>0) ev.push({t:new Date(v.reviewedAt), xp:Number(v.videoXp)}); });
+    ev.sort((a,b)=>a.t-b.t);
+    let cum=0; const series=ev.map(e=>{ cum+=e.xp; return cum; });
+    const now=new Date(), mk=now.getFullYear()+'-'+now.getMonth();
+    let monthGain=0; ev.forEach(e=>{ if(e.t.getFullYear()+'-'+e.t.getMonth()===mk) monthGain+=e.xp; });
+    const monthName=now.toLocaleDateString(undefined,{month:'long'});
+    el.style.display='block';
+    el.innerHTML='<h3>📊 Progress at a glance</h3><div class="kpis-wrap">'+
+      '<div class="kpi"><div class="lbl">⚡ Total XP</div><div class="val">'+totalXp+'</div>'+
+        (monthGain>0?'<div class="sub">+'+monthGain+' in '+monthName+'</div>':'')+'</div>'+
+      '<div class="kpi"><div class="lbl">📚 Lessons</div><div class="val">'+lessonsDone+' <small>/ 22</small></div></div>'+
+      '<div class="kpi"><div class="lbl">🎖 Badges</div><div class="val">'+bset.size+'</div></div>'+
+      '<div class="kpi"><div class="lbl">🏁 IMCC avg</div><div class="val">'+(inum?imccAvg:'—')+(inum?' <small>/100</small>':'')+'</div>'+
+        (inum?'<div class="sub">'+inum+'/9 scored</div>':'')+'</div>'+
+      '</div>'+
+      (series.length>1?'<div class="xpcard"><div class="ttl">📈 XP growth</div>'+
+        '<div class="meta">cumulative · most recent on the right</div>'+sparkSVG(series,'#22d3ee')+'</div>':'');
+  }
+
   function render(payload){
     const lessons=(payload.lessons||[]).filter(l=>l.finished);
     lessons.sort((a,b)=> new Date(b.updatedAt||0) - new Date(a.updatedAt||0));
@@ -310,6 +375,7 @@
       ' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
     document.getElementById('repdate').textContent='Progress report · generated '+fmtDate(new Date())+' · Autobotic STEM EDU';
 
+    renderKpis(payload, lessons);
     renderTeacherNote(payload);
     const skillLines=renderSkills(payload.videos||[]);
     const projLines=renderProjects(payload.projects);
