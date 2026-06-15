@@ -57,6 +57,32 @@
   <p class="note">Videos become candidates when your teacher reviews them. Winner gets <b>+100 XP</b> and the 🏆 Best Video badge. No voting for your own video 🙂</p>
 
 <script>
+  // Slug -> friendly lesson name (keep in sync with page-dashboard.js TITLES)
+  const TITLES = {
+    'lesson-1a-ai-ethics':'Lesson 1A · AI Ethics & Prompting',
+    'lesson-1b-pi-setup':'Lesson 1B · Pi Setup',
+    'lesson-2-linux-cli':'Lesson 2 · Linux Command Line',
+    'lesson-3-python-basics':'Lesson 3 · Python Basics',
+    'lesson-4-blink-led':'Lesson 4 · Blink an LED',
+    'lesson-5-buzzer':'Lesson 5 · Buzzer',
+    'lesson-6-button-matrix':'Lesson 6 · Button Matrix',
+    'lesson-7-ldr':'Lesson 7 · LDR Light Sensor',
+    'lesson-8-pir-motion':'Lesson 8 · PIR Motion',
+    'lesson-9-vibration':'Lesson 9 · Vibration Motor',
+    'lesson-10-sound':'Lesson 10 · Sound Detector',
+    'lesson-11-7segment':'Lesson 11 · 7-Segment Display',
+    'lesson-12-led-matrix':'Lesson 12 · LED Matrix',
+    'lesson-13-lcd1602':'Lesson 13 · LCD 1602',
+    'lesson-14-ws2812b':'Lesson 14 · RGB LED Strip',
+    'lesson-15-ultrasonic':'Lesson 15 · Ultrasonic Distance',
+    'lesson-16-color-sensor':'Lesson 16 · Colour Sensor',
+    'lesson-17-servo':'Lesson 17 · Servo Motor',
+    'lesson-18-dc-motor':'Lesson 18 · DC Motor',
+    'lesson-19-opencv-camera':'Lesson 19 · Camera & OpenCV',
+    'lesson-20-hsv-tracker':'Lesson 20 · HSV Tracker',
+    'lesson-21-object-following':'Lesson 21 · Object Following'
+  };
+  function lessonName(c){ return c.lessonTitle || TITLES[c.lessonId] || c.lessonId; }
   let MYVOTE=null;
   function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -88,7 +114,7 @@
         action='<button class="vote'+(MYVOTE===c.rowId?' sel':'')+'" onclick="vote(this)">'+(MYVOTE===c.rowId?'✅ Your vote':'🗳 Vote')+'</button>';
       }
       el.innerHTML='<b>'+esc(c.memberName)+(c.isMine?' (you)':'')+'</b>'+
-        '<span class="lesson">'+esc(c.lessonTitle||c.lessonId)+'</span>'+
+        '<span class="lesson">'+esc(lessonName(c))+'</span>'+
         (c.built?'<div class="built">“'+esc(c.built)+'”</div>':'<div class="built"></div>')+
         '<div class="row">'+
         (c.link?'<a class="watch" href="'+esc(c.link)+'" target="_blank" rel="noopener">▶ Watch</a>':'<a class="watch" href="#" onclick="openShowcase(event)">▶ Intermediate Group</a>')+
