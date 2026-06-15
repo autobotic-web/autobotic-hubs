@@ -82,7 +82,9 @@
     'lesson-20-hsv-tracker':'Lesson 20 · HSV Tracker',
     'lesson-21-object-following':'Lesson 21 · Object Following'
   };
-  function lessonName(c){ return c.lessonTitle || TITLES[c.lessonId] || c.lessonId; }
+  // Lesson candidates carry the slug in refId; prettify those. Project/IMCC
+  // candidates aren't in TITLES, so they keep their real refTitle (lessonTitle).
+  function lessonName(c){ return TITLES[c.refId] || c.lessonTitle || c.refId || c.lessonId || ''; }
   let MYVOTE=null;
   function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
