@@ -431,9 +431,6 @@ html,body{overflow-x:clip}
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
   </button>
   <div class="nav-spacer"></div>
-  <button class="nav-btn" data-action="print" data-tip="Print report" aria-label="Print">
-    <svg viewBox="0 0 24 24"><path d="M7 8V3h10v5"/><rect x="4" y="8" width="16" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg>
-  </button>
 </aside>
 
 <div class="layout">
@@ -576,6 +573,21 @@ html,body{overflow-x:clip}
         <tbody id="activityBody"></tbody>
       </table>
     </section>
+
+    <!-- ============ PRINT BUTTON ============ -->
+    <div class="reveal" style="text-align:center;margin:28px 0 12px">
+      <button data-action="print" aria-label="Print report"
+        style="display:inline-flex;align-items:center;gap:9px;padding:12px 28px;
+               border:0;border-radius:12px;cursor:pointer;font-size:15px;font-weight:600;
+               background:linear-gradient(135deg,rgba(79,124,255,.18),rgba(157,92,255,.18));
+               color:var(--txt);border:1px solid rgba(124,108,255,.35);
+               transition:background .2s,transform .2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 8V3h10v5"/><rect x="4" y="8" width="16" height="9" rx="2"/><path d="M7 14h10v7H7z"/>
+        </svg>
+        Print / Save report
+      </button>
+    </div>
   </main>
 </div>
 
@@ -968,6 +980,11 @@ else start();
 /* print: finalize all chart animations so nothing prints half-drawn */
 window.addEventListener('beforeprint',function(){FINAL=true;renderAll();});
 window.addEventListener('afterprint',function(){FINAL=false;});
+
+/* ---------------- print button (below activity) ---------------- */
+document.querySelectorAll('[data-action="print"]').forEach(function(btn){
+  btn.addEventListener('click',function(){FINAL=true;renderAll();window.print();});
+});
 
 /* ---------------- sidebar nav + search ---------------- */
 document.querySelectorAll('.nav-btn').forEach(function(btn){
