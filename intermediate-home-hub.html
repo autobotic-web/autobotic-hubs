@@ -10,7 +10,7 @@
 <style>
 /* Color system — matches intermediate-dashboard-hub.html */
 :root{
-  --bg:#02030a; --bg-2:#04060f;
+  --bg:#070b16; --bg-2:#0a0f1f;
   --card:rgba(255,255,255,.035);
   --card-hover:rgba(255,255,255,.06);
   --line:rgba(255,255,255,.09);
@@ -31,8 +31,8 @@ html,body{height:100%}
 body{
   font-family:'Inter',system-ui,sans-serif;color:var(--txt);
   background:
-    radial-gradient(1100px 520px at 70% -10%, rgba(79,124,255,.22), transparent 60%),
-    radial-gradient(900px 520px at 8% 110%, rgba(108,58,196,.18), transparent 60%),
+    radial-gradient(1100px 520px at 70% -10%, rgba(79,124,255,.16), transparent 60%),
+    radial-gradient(900px 520px at 8% 110%, rgba(157,92,255,.12), transparent 60%),
     linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
   min-height:100vh;padding:34px 22px 44px;
   position:relative;overflow-x:hidden;
@@ -48,25 +48,20 @@ body::before{
   mask-image:radial-gradient(80% 70% at 50% 30%, #000 30%, transparent 100%);
   -webkit-mask-image:radial-gradient(80% 70% at 50% 30%, #000 30%, transparent 100%);
 }
-#net{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:1}
-/* drifting nebula clouds — bold galaxy haze (also the fallback for reduced-motion) */
+#net{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.85}
+/* drifting nebula clouds */
 body::after{
-  content:'';position:fixed;inset:-25%;pointer-events:none;z-index:0;
+  content:'';position:fixed;inset:-20%;pointer-events:none;z-index:0;
   background:
-    /* bright galactic core */
-    radial-gradient(38% 30% at 72% 34%, rgba(118,72,206,.34), transparent 68%),
-    radial-gradient(34% 26% at 24% 30%, rgba(34,211,238,.22), transparent 70%),
-    radial-gradient(40% 30% at 55% 66%, rgba(79,124,255,.26), transparent 72%),
-    radial-gradient(30% 24% at 86% 78%, rgba(251,113,133,.18), transparent 70%),
-    /* diagonal milky-way band */
-    linear-gradient(122deg, transparent 30%, rgba(98,68,200,.16) 46%,
-      rgba(80,180,255,.14) 54%, transparent 70%);
-  filter:blur(8px) saturate(1.25);
-  animation:nebula 22s ease-in-out infinite alternate;
+    radial-gradient(42% 32% at 25% 28%, rgba(157,92,255,.11), transparent 70%),
+    radial-gradient(36% 28% at 76% 62%, rgba(34,211,238,.08), transparent 70%),
+    radial-gradient(30% 24% at 56% 14%, rgba(251,113,133,.06), transparent 70%),
+    radial-gradient(26% 22% at 12% 78%, rgba(79,124,255,.09), transparent 70%);
+  animation:nebula 28s ease-in-out infinite alternate;
 }
 @keyframes nebula{
-  from{transform:translate3d(-2.5%,-1.5%,0) scale(1.02) rotate(-.4deg)}
-  to{transform:translate3d(3%,2.5%,0) scale(1.12) rotate(.4deg)}
+  from{transform:translate3d(-2%,-1%,0) scale(1)}
+  to{transform:translate3d(2.5%,2%,0) scale(1.09)}
 }
 .wrap{max-width:880px;margin:0 auto;position:relative;z-index:1}
 
@@ -238,12 +233,12 @@ h1 .grad{
 <div class="wrap">
   <div class="badge fx d1"><span class="dot"></span>Autobotic · Intermediate
     <span class="ok">· Systems online</span></div>
-  <h1 class="fx d2">Your <span class="grad">Learning Hub</span></h1>
+  <h1 class="fx d2">Your <span class="grad">AI Mission Control</span></h1>
   <p class="term fx d3"><span class="pre">&gt;&nbsp;</span><span id="typed"></span><span class="caret"></span></p>
 
   <div class="grid">
     <a class="tile feature t-lessons rv su"
-       href="https://www.autoboticedu.com/intermediate-lessons" target="_blank" rel="noopener">
+       href="https://www.autoboticedu.com/participant-page/4b0e69ad-9a8d-411c-9127-d248a1ca4077?programId=4b0e69ad-9a8d-411c-9127-d248a1ca4077&amp;participantId=f3db4972-7cd7-4503-87a6-0ff00ab11cd0" target="_blank" rel="noopener">
       <span class="hud tl"></span><span class="hud br"></span><span class="sweep"></span>
       <div class="icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#7ea4ff" stroke-width="1.7"
@@ -419,141 +414,79 @@ try{
     }
   }catch(e){}
 
-  /* ===== GALAXY BACKGROUND =====
-     A glowing diagonal galaxy band + bright core, denser twinkling stars
-     concentrated along the band, plus frequent shooting stars.
-     Fully guarded: any failure leaves the CSS nebula in place. */
+  /* galaxy starfield background — twinkling stars, depth parallax, shooting stars */
   try{
     var cv=document.getElementById('net');
     if(cv && cv.getContext && !reduced){
-      var cx=cv.getContext('2d'), W=0, H=0, DPR=1, stars=[], raf=0;
-      var shoot=null, nextShoot=1500;
-      var TINTS=['255,255,255','207,224,255','230,214,255','186,230,253','255,228,196'];
-      /* the galaxy band runs diagonally; stars cluster near this line */
-      var bandAng=-0.62;                 // ~ -35 degrees
-      var bandSin=Math.sin(bandAng), bandCos=Math.cos(bandAng);
-
+      var cx=cv.getContext('2d'), W=0, H=0, stars=[], raf=0;
+      var shoot=null, nextShoot=2500;
+      var TINTS=['255,255,255','207,224,255','230,214,255','186,230,253'];
       var size=function(){
-        DPR=Math.min(2, window.devicePixelRatio||1);
-        W=window.innerWidth; H=window.innerHeight;
-        cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
-        cv.style.width=W+'px'; cv.style.height=H+'px';
-        cx.setTransform(DPR,0,0,DPR,0,0);
-        /* denser field */
-        var n=Math.min(420, Math.max(140, Math.round(W*H/4200)));
+        W=cv.width=window.innerWidth; H=cv.height=window.innerHeight;
+        var n=Math.min(200, Math.max(70, Math.round(W*H/9000)));
         stars=[];
-        var cxp=W*0.55, cyp=H*0.5;        // band centre point
         for(var i=0;i<n;i++){
           var depth=.25+Math.random()*.75;
-          var x, y;
-          /* 62% of stars hug the band for an obvious milky-way streak */
-          if(Math.random()<0.62){
-            var along=(Math.random()-0.5)*Math.max(W,H)*1.5;
-            var across=(Math.random()-0.5);
-            across=across*across*across*Math.max(W,H)*0.42; // tight cluster, soft edges
-            x=cxp+along*bandCos-across*bandSin;
-            y=cyp+along*bandSin+across*bandCos;
-          }else{
-            x=Math.random()*W; y=Math.random()*H;
-          }
           stars.push({
-            x:x, y:y,
-            r:(.5+Math.random()*1.8)*depth, d:depth,
-            o:.35+Math.random()*.6,
-            ph:Math.random()*6.2832, sp:.5+Math.random()*1.4,
-            vx:-(.02+Math.random()*.07*depth),
-            vy:.01+Math.random()*.04*depth,
+            x:Math.random()*W, y:Math.random()*H,
+            r:(.4+Math.random()*1.4)*depth, d:depth,
+            o:.25+Math.random()*.55,
+            ph:Math.random()*6.2832, sp:.4+Math.random()*1.1,
+            vx:-(.015+Math.random()*.05*depth),
+            vy:.008+Math.random()*.03*depth,
             tint:TINTS[(Math.random()*TINTS.length)|0]
           });
         }
       };
-
       var newShoot=function(ts){
-        var ang=2.30+Math.random()*.55;
+        var ang=2.35+Math.random()*.5;
         shoot={
-          x:W*(.25+Math.random()*.7), y:H*Math.random()*.4,
-          vx:Math.cos(ang)*15, vy:Math.sin(ang)*15,
-          life:0, max:40
+          x:W*(.3+Math.random()*.65), y:H*Math.random()*.35,
+          vx:Math.cos(ang)*13, vy:Math.sin(ang)*13,
+          life:0, max:34
         };
-        nextShoot=ts+3200+Math.random()*4500;
+        nextShoot=ts+6000+Math.random()*8000;
       };
-
-      /* draw the glowing band + core once per frame (cheap, additive) */
-      var drawGalaxy=function(t){
-        var drift=Math.sin(t*0.06)*W*0.012;
-        cx.save();
-        cx.globalCompositeOperation='lighter';
-        /* bright galactic core */
-        var coreX=W*0.7+drift, coreY=H*0.36;
-        var core=cx.createRadialGradient(coreX,coreY,0,coreX,coreY,Math.max(W,H)*0.30);
-        core.addColorStop(0,'rgba(150,108,224,0.26)');
-        core.addColorStop(0.45,'rgba(96,72,200,0.12)');
-        core.addColorStop(1,'rgba(96,72,200,0)');
-        cx.fillStyle=core; cx.fillRect(0,0,W,H);
-        /* coloured blobs strung along the diagonal band */
-        var bx=[0.12,0.32,0.52,0.72,0.90];
-        var by=[0.80,0.64,0.48,0.32,0.18];
-        var bcol=['34,211,238','79,124,255','120,70,206','96,72,200','251,113,133'];
-        for(var b=0;b<bx.length;b++){
-          var gx=bx[b]*W+drift, gy=by[b]*H;
-          var rr=Math.max(W,H)*0.24;
-          var gg=cx.createRadialGradient(gx,gy,0,gx,gy,rr);
-          gg.addColorStop(0,'rgba('+bcol[b]+',0.11)');
-          gg.addColorStop(1,'rgba('+bcol[b]+',0)');
-          cx.fillStyle=gg; cx.fillRect(0,0,W,H);
-        }
-        cx.restore();
-      };
-
       var step=function(ts){
         cx.clearRect(0,0,W,H);
-        var t=ts*0.001, sy=0, i, s;
+        var sy=0, t=ts*0.001, i, s;
         try{ sy=window.scrollY||0; }catch(e){}
-        drawGalaxy(t);
-        cx.save();
-        cx.globalCompositeOperation='lighter';   // stars glow brighter on the band
         for(i=0;i<stars.length;i++){
           s=stars[i];
           s.x+=s.vx; s.y+=s.vy;
           if(s.x<-2) s.x=W+2;
           if(s.y>H+2) s.y=-2;
-          var yy=s.y - sy*0.14*s.d;
+          var yy=s.y - sy*0.12*s.d;
           yy=((yy%H)+H)%H;
-          var tw=s.o*(0.55+0.45*Math.sin(t*s.sp+s.ph));
-          /* glow halo for the bigger stars */
-          if(s.r>0.9){
-            cx.beginPath();
-            cx.arc(s.x,yy,s.r*4.0,0,6.2832);
-            cx.fillStyle='rgba('+s.tint+','+(tw*0.12).toFixed(3)+')';
-            cx.fill();
-          }
+          var tw=s.o*(0.6+0.4*Math.sin(t*s.sp+s.ph));
           cx.beginPath();
           cx.arc(s.x,yy,s.r,0,6.2832);
           cx.fillStyle='rgba('+s.tint+','+tw.toFixed(3)+')';
           cx.fill();
+          if(s.r>1.1){
+            cx.beginPath();
+            cx.arc(s.x,yy,s.r*3.2,0,6.2832);
+            cx.fillStyle='rgba('+s.tint+','+(tw*0.09).toFixed(3)+')';
+            cx.fill();
+          }
         }
-        cx.restore();
-
         if(!shoot && ts>nextShoot) newShoot(ts);
         if(shoot){
           shoot.x+=shoot.vx; shoot.y+=shoot.vy; shoot.life++;
           var f=1-shoot.life/shoot.max;
           if(f<=0 || shoot.x<-80 || shoot.y>H+80){ shoot=null; }
           else{
-            var tx=shoot.x-shoot.vx*5.5, ty=shoot.y-shoot.vy*5.5;
+            var tx=shoot.x-shoot.vx*4.5, ty=shoot.y-shoot.vy*4.5;
             var g=cx.createLinearGradient(shoot.x,shoot.y,tx,ty);
-            g.addColorStop(0,'rgba(255,255,255,'+(0.95*f).toFixed(3)+')');
+            g.addColorStop(0,'rgba(255,255,255,'+(0.85*f).toFixed(3)+')');
             g.addColorStop(1,'rgba(120,160,255,0)');
-            cx.save();
-            cx.globalCompositeOperation='lighter';
             cx.beginPath();
             cx.moveTo(shoot.x,shoot.y); cx.lineTo(tx,ty);
-            cx.strokeStyle=g; cx.lineWidth=2.4; cx.stroke();
+            cx.strokeStyle=g; cx.lineWidth=2; cx.stroke();
             cx.beginPath();
-            cx.arc(shoot.x,shoot.y,2.2,0,6.2832);
-            cx.fillStyle='rgba(255,255,255,'+(0.95*f).toFixed(3)+')';
+            cx.arc(shoot.x,shoot.y,1.8,0,6.2832);
+            cx.fillStyle='rgba(255,255,255,'+(0.9*f).toFixed(3)+')';
             cx.fill();
-            cx.restore();
           }
         }
         raf=requestAnimationFrame(step);

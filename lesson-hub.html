@@ -93,36 +93,35 @@
      Leave url as "#" until that lesson's page exists.
      ============================================================ */
   const lessons = [
-    ["1A","lesson-1a-ai-ethics","AI Ethics & Prompting","#"],
-    ["1B","lesson-1b-pi-setup","Raspberry Pi Desktop Setup","#"],
-    ["2","lesson-2-linux-cli","Linux Command Line","#"],
-    ["3","lesson-3-python-basics","Python Basics","#"],
-    ["4","lesson-4-blink-led","Blink an LED with GPIO","#"],
-    ["5","lesson-5-buzzer","Make Sounds with a Buzzer","#"],
-    ["6","lesson-6-button-matrix","Reading a Button Matrix","#"],
-    ["7","lesson-7-ldr","Sensing Light with an LDR","#"],
-    ["8","lesson-8-pir-motion","Detecting Motion (PIR)","#"],
-    ["9","lesson-9-vibration","Vibration Motor","#"],
-    ["10","lesson-10-sound","Detecting Sound","#"],
-    ["11","lesson-11-7segment","4-Digit 7-Segment Display","#"],
-    ["12","lesson-12-led-matrix","LED Matrix Patterns","#"],
-    ["13","lesson-13-lcd1602","Text on an LCD 1602","#"],
-    ["14","lesson-14-ws2812b","RGB LED Strip (NeoPixel)","#"],
-    ["15","lesson-15-ultrasonic","Measuring Distance (Ultrasonic)","#"],
-    ["16","lesson-16-color-sensor","Colour Sensor","#"],
-    ["17","lesson-17-servo","Servo Motor","#"],
-    ["18","lesson-18-dc-motor","DC Motor Control","#"],
-    ["19","lesson-19-opencv-camera","Camera & OpenCV","#"],
-    ["20","lesson-20-hsv-tracker","HSV Colour Tracker","#"],
-    ["21","lesson-21-object-following","Object Following","#"]
+    ["1A","lesson-1a-ai-ethics","AI Ethics & Prompting","https://www.autoboticedu.com/lessons/lesson-1a-ai-ethics"],
+    ["1B","lesson-1b-pi-setup","Raspberry Pi Desktop Setup","https://www.autoboticedu.com/lessons/lesson-1b-pi-setup"],
+    ["2","lesson-2-linux-cli","Linux Command Line","https://www.autoboticedu.com/lessons/lesson-2-linux-cli"],
+    ["3","lesson-3-python-basics","Python Basics","https://www.autoboticedu.com/lessons/lesson-3-python-basics"],
+    ["4","lesson-4-blink-led","Blink an LED with GPIO","https://www.autoboticedu.com/lessons/lesson-4-blink-led"],
+    ["5","lesson-5-buzzer","Make Sounds with a Buzzer","https://www.autoboticedu.com/lessons/lesson-5-buzzer"],
+    ["6","lesson-6-button-matrix","Reading a Button Matrix","https://www.autoboticedu.com/lessons/lesson-6-button-matrix"],
+    ["7","lesson-7-ldr-light","Sensing Light with an LDR","https://www.autoboticedu.com/lessons/lesson-7-ldr-light"],
+    ["8","lesson-8-pir-motion","Detecting Motion (PIR)","https://www.autoboticedu.com/lessons/lesson-8-pir-motion"],
+    ["9","lesson-9-vibration-motor","Vibration Motor","https://www.autoboticedu.com/lessons/lesson-9-vibration-motor"],
+    ["10","lesson-10-sound-detector","Detecting Sound","https://www.autoboticedu.com/lessons/lesson-10-sound-detector"],
+    ["11","lesson-11-7segment","4-Digit 7-Segment Display","https://www.autoboticedu.com/lessons/lesson-11-7segment"],
+    ["12","lesson-12-led-matrix","LED Matrix Patterns","https://www.autoboticedu.com/lessons/lesson-12-led-matrix"],
+    ["13","lesson-13-lcd-1602","Text on an LCD 1602","https://www.autoboticedu.com/lessons/lesson-13-lcd-1602"],
+    ["14","lesson-14-ws2812b","RGB LED Strip (NeoPixel)","https://www.autoboticedu.com/lessons/lesson-14-ws2812b"],
+    ["15","lesson-15-ultrasonic","Measuring Distance (Ultrasonic)","https://www.autoboticedu.com/lessons/lesson-15-ultrasonic"],
+    ["16","lesson-16-colour-sensor","Colour Sensor","https://www.autoboticedu.com/lessons/lesson-16-colour-sensor"],
+    ["17","lesson-17-servo","Servo Motor","https://www.autoboticedu.com/lessons/lesson-17-servo"],
+    ["18","lesson-18-dc-motor","DC Motor Control","https://www.autoboticedu.com/lessons/lesson-18-dc-motor"],
+    ["19","lesson-19-camera-opencv","Camera & OpenCV","https://www.autoboticedu.com/lessons/lesson-19-camera-opencv"],
+    ["20","lesson-20-hsv-tracker","HSV Colour Tracker","https://www.autoboticedu.com/lessons/lesson-20-hsv-tracker"],
+    ["21","lesson-21-object-following","Object Following","https://www.autoboticedu.com/lessons/lesson-21-object-following"]
   ];
 
   const grid = document.getElementById("grid");
   const byId = {};
   lessons.forEach(([num,id,title,url])=>{
-    // URL follows the site's naming: autoboticedu.com/intermediate-lesson-<num> (e.g. -1a, -1, -2 ...)
-    const lessonUrl = (url && url.indexOf('http')===0) ? url
-      : ("https://autoboticedu.com/intermediate-lesson-" + String(num).toLowerCase());
+    // Every lesson row above carries its full URL (the /lessons/<slug> dynamic pages).
+    const lessonUrl = url;
     const a = document.createElement("a");
     a.className = "coin-link";
     a.dataset.lesson = id;
@@ -211,10 +210,13 @@
   }
   applyCompleted([]); // start: all grey
 
-  // Receive the student's completed-lesson list from the Wix page (page-hub.js)
+  // Receive the student's completed-lesson list from the Wix page.
+  // Accepts BOTH protocols: 'hub-progress' (old #hubFrame embed) and
+  // 'wix-member' (the /lessons/<slug> router page, lessons-page code).
   window.addEventListener("message",(e)=>{
     const d = e.data;
-    if(d && d.source === "hub-progress" && Array.isArray(d.completedLessons)){
+    if(d && (d.source === "hub-progress" || d.source === "wix-member")
+         && Array.isArray(d.completedLessons)){
       applyCompleted(d.completedLessons);
     }
   });
