@@ -166,6 +166,7 @@
     'lesson-1b-pi-setup':       {ico:'🖥️', what:'Set up a real computer from scratch — installed the operating system and configured a Raspberry Pi on their own.'},
     'lesson-2-linux-cli':       {ico:'⌨️', what:'Learned to control a computer by typing commands — the same way professional engineers work every day.'},
     'lesson-3-python-basics':   {ico:'🐍', what:'Wrote their first real Python programs — the same language used by professional AI engineers.'},
+    'intermediate-gp-1-sonar':  {ico:'📡', title:'Guided Project 1 · Sonar Radar', what:'Built a working sonar radar — wired a distance sensor and a motor to a tiny computer, 3D-printed its stand, and programmed it to show nearby objects on an LED screen.'},
     'lesson-4-blink-led':       {ico:'💡', what:'Wrote a Python program that controls a physical light — and practised finding and fixing code errors on their own.'},
     'lesson-5-buzzer':          {ico:'🔊', what:'Programmed sound from code, learning how electronic signals turn into tones.'},
     'lesson-6-button-matrix':   {ico:'🔘', what:'Made a program that reacts to button presses — how keyboards and keypads really work inside.'},
@@ -396,7 +397,7 @@
       const s=best
         ? {ico:'🏆', what:'Voted Best Video of the Month by their classmates — bonus +100 XP. A proud moment!'}
         : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
-      const title=l.lessonTitle||TITLES_FALLBACK(l.lessonId);
+      const title=l.lessonTitle||(SUMMARIES[l.lessonId]||{}).title||TITLES_FALLBACK(l.lessonId);
       const notes=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
       const hasScore=(l.quizScore!==undefined&&l.quizScore!==null&&l.quizScore!=='');
       if(!best) notes.push('✅ quiz completed'+(hasScore?' · '+l.quizScore+'%':''));
