@@ -303,12 +303,21 @@
 
   // Accepts BOTH protocols, same as lesson-hub.html: 'hub-progress' (#hubFrame page
   // code) and 'wix-member' (the /lessons/<slug> router page).
+  let gotProgress = false;
   window.addEventListener('message', e=>{
     const d = e.data;
     if(d && (d.source === 'hub-progress' || d.source === 'wix-member') && Array.isArray(d.completedLessons)){
+      gotProgress = true;
       applyCompleted(d.completedLessons);
     }
   });
+  // Handshake: ask the Wix page for progress until it answers (survives slow loads).
+  let pings = 0;
+  (function ping(){
+    if(gotProgress || window.parent === window || pings++ >= 20) return;
+    try{ window.parent.postMessage({source:'levels-ready'}, '*'); }catch(_){}
+    setTimeout(ping, 750);
+  })();
 
   if(!reduced){
     for(let i=0;i<8;i++){
