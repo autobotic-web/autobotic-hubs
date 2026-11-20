@@ -40,6 +40,16 @@
   .skillrow .v{flex:0 0 52px;text-align:right;font-weight:800;color:#5eead4}
   .hintline{color:#9fa6dd;font-size:12.5px;margin-top:8px}
   .pcard{margin-bottom:12px}
+  .jlog{margin-top:14px;border-top:1px solid #33386f;padding-top:12px}
+  .jlog>.h{color:#ffd64a;font-weight:700;font-size:13.5px;margin-bottom:2px}
+  .jlog>.sub{color:#9fa6dd;font-size:12px;margin-bottom:10px}
+  .jmiss{background:#161a3a;border:1px solid #2c3163;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .jmiss>b{color:#eef0ff;font-size:13px}
+  .jnote{border-top:1px solid #232a55;margin-top:8px;padding-top:8px}
+  .jnote:first-of-type{border-top:0;margin-top:6px}
+  .jnote .meta{color:#9fa6dd;font-size:11.5px;margin-bottom:2px}
+  .jnote .meta b{color:#5eead4}
+  .jnote .body{color:#dfe3ff;font-size:12.5px;white-space:pre-wrap;word-break:break-word}
   .pcard .toprow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
   .pcard .ttl{font-size:15px;font-weight:800;color:#9fd6ff}
   .pill{font-size:11px;font-weight:800;border-radius:999px;padding:2px 10px}
@@ -69,6 +79,8 @@
     border-radius:8px;color:#ffeebf;font-size:13.5px;line-height:1.5}
   .item .own b{color:#ffd64a}
   .item .own .fixline{margin-top:4px;color:#d9e2ff}
+  .fnote{margin-top:8px;padding:9px 12px;background:rgba(159,214,255,.07);border-left:3px solid #5b63b8;border-radius:8px;color:#dfe2ff;font-size:13px;line-height:1.5}
+  .fnote .when{color:#9fa6dd;font-size:11.5px;font-weight:700;margin-bottom:2px}
   .empty{text-align:center;color:#aab0e6;padding:40px 16px;font-size:15px}
   .kpis-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   @media (max-width:560px){.kpis-wrap{grid-template-columns:repeat(2,1fr)}}
@@ -156,8 +168,10 @@
   <div class="sect" id="feedhead" style="display:none"><h3>📚 Lesson-by-lesson highlights</h3></div>
   <main class="list" id="list"><div class="empty">Loading progress…</div></main>
   <div class="sect" id="imcc" style="display:none"></div>
+  <div class="sect" id="foundation" style="display:none"></div>
   <div class="sect" id="skills" style="display:none;margin-bottom:30px"></div>
   <div class="sect" id="projects" style="display:none"></div>
+  <div class="sect" id="aipitch" style="display:none"></div>
 
 <script>
   /* Parent-language summary per lesson: what the child CAN NOW DO, no jargon. */
@@ -277,10 +291,56 @@
     return lines;
   }
 
+  /* AI Development & Pitching (20 Nov 2026) - ARC 2026 challenge, scored by the teacher in
+     the console (6 phases + 100-point rubric). Shown only once it has been scored. */
+  const AIDP_PHASES=['Problem','AI design','Poster & video','Prototype','Business plan','Live pitch'];
+  function renderAiPitch(a){
+    const el=document.getElementById('aipitch');
+    if(!a||a.scoreTotal===null||a.scoreTotal===undefined){ el.style.display='none'; return []; }
+    el.style.display='block';
+    const parts=pj(a.scoreParts,{}), ph=pj(a.phases,[]), rub=a.rubric||[];
+    const done=ph.filter(x=>x==='done').length;
+    let h='<h3>🤖 AI Development &amp; Pitching</h3><div class="card pcard">'+
+      '<div class="toprow"><span class="ttl">AI Robotics Challenge 2026 project</span>'+
+      '<span class="pill act">'+done+' of 6 phases done</span></div>';
+    h+='<div class="pbreak">'+AIDP_PHASES.map((n,i)=>(ph[i]==='done'?'✅ ':ph[i]==='wip'?'⏳ ':'▫️ ')+n).join(' · ')+'</div>';
+    h+='<div class="pbreak"><span class="pscore">🏅 Score: '+a.scoreTotal+'/100</span> — '+
+      rub.map(r=>esc(r[1])+' '+(parts[r[0]]!==undefined?parts[r[0]]:'—')+'/'+r[2]).join(' · ')+'</div>';
+    if(a.scoreNote) h+='<div class="pquote">💬 Teacher: “'+esc(a.scoreNote)+'”</div>';
+    h+='</div>';
+    el.innerHTML=h;
+    return ['- scored '+a.scoreTotal+'/100, '+done+' of 6 phases done'+(a.scoreNote?'. Teacher: "'+a.scoreNote+'"':'')];
+  }
+
+  /* Intermediate Foundation lessons (23 Oct 2026) - the 12 Pico W Tetris lessons the student
+     has started, with the teacher's per-lesson comment. Replaces the removed Foundation Builds. */
+  const FDN_TOTAL=12;
+  function renderFoundation(list){
+    const el=document.getElementById('foundation');
+    const fs=(list||[]).filter(f=>f&&f.n);
+    if(!fs.length){ el.style.display='none'; return []; }
+    el.style.display='block';
+    const lines=[], done=fs.filter(f=>f.finished).length;
+    let h='<h3>🧱 Intermediate Foundation lessons</h3><div class="pbreak" style="margin-bottom:8px">'+done+' of '+FDN_TOTAL+' lessons completed</div>';
+    fs.forEach(f=>{
+      const name='Lesson '+f.n+' · '+(f.title||'');
+      h+='<div class="card pcard"><div class="toprow"><span class="ttl">'+esc(name)+'</span>'+
+        '<span class="pill '+(f.finished?'act':'arc')+'">'+(f.finished?'✅ Completed':'⏳ In progress')+'</span></div>';
+      if(f.updatedAt) h+='<div class="pbreak">Last activity '+esc(fmtDate(f.updatedAt))+'</div>';
+      if(f.teacherComment) h+='<div class="fnote"><div class="when">🧑‍🏫 Teacher’s comment'+(f.teacherCommentAt?' · '+esc(fmtDate(f.teacherCommentAt)):'')+'</div>'+esc(f.teacherComment)+'</div>';
+      h+='</div>';
+      lines.push('- '+name+' - '+(f.finished?'completed':'in progress')+
+        (f.teacherComment?'. Teacher: "'+String(f.teacherComment).replace(/\s+/g,' ').slice(0,160)+'"':''));
+    });
+    el.innerHTML=h;
+    return lines;
+  }
+
   function renderImcc(imcc){
     const el=document.getElementById('imcc');
     const have=(imcc||[]).filter(m=>m.quizScore!==null||m.practicalScore!==null);
-    if(!have.length){ el.style.display='none'; return []; }
+    const haveNotes=(imcc||[]).some(m=>((m.log)||[]).length);
+    if(!have.length&&!haveNotes){ el.style.display='none'; return []; }
     el.style.display='block';
     const by={}; (imcc||[]).forEach(m=>by[m.missionId]=m);
     let rows='', sum=0, n=0;
@@ -294,10 +354,24 @@
         '<td class="'+(m.practicalScore!==null?'num':'dim')+'">'+(m.practicalScore!==null?m.practicalScore+'/90':'—')+'</td>'+
         '<td class="'+(total!==null?'num':'dim')+'">'+(total!==null?total+'/100':'—')+'</td></tr>';
     });
+    // Teacher judging notes per mission (read-only, shown to parents).
+    const jfmt=(v)=>{ if(!v) return ''; const t=new Date(v); return isNaN(t)?'':
+      t.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); };
+    let jblocks='';
+    MISSION_ORDER.forEach(id=>{
+      const log=((by[id]||{}).log)||[]; if(!log.length) return;
+      let notes='';
+      log.forEach(x=>{ const dt=jfmt(x.createdAt); const ed=x.editedAt?' · edited':'';
+        notes+='<div class="jnote"><div class="meta"><b>'+esc(x.byName||'Teacher')+'</b>'+
+          (dt?' · '+dt:'')+ed+'</div><div class="body">'+esc(x.text)+'</div></div>'; });
+      jblocks+='<div class="jmiss"><b>'+esc(MISSION_NAMES[id]||id)+'</b>'+notes+'</div>';
+    });
+    const jlog=jblocks?'<div class="jlog"><div class="h">🗒️ Teacher judging notes</div>'+
+      '<div class="sub">How each mission run went and why it scored the way it did, logged by the teachers.</div>'+jblocks+'</div>':'';
     let h='<h3>🏁 IMCC robotics missions</h3><div class="card">'+
       '<table><tr><th>Mission</th><th>Quiz</th><th>Practical</th><th>Total</th></tr>'+rows+'</table>'+
       (n?'<div class="hintline">Average across scored missions: <b style="color:#5eead4">'+Math.round(sum/n)+'/100</b>. A total appears once the teacher scores the practical run.</div>'
-        :'<div class="hintline">Quiz attempts made — totals appear once the practical runs are scored.</div>')+'</div>';
+        :'<div class="hintline">Quiz attempts made — totals appear once the practical runs are scored.</div>')+jlog+'</div>';
     el.innerHTML=h;
     return n?[n+' mission'+(n===1?'':'s')+' scored, average '+Math.round(sum/n)+'/100']:[];
   }
@@ -368,19 +442,28 @@
   }
 
   function render(payload){
-    const lessons=(payload.lessons||[]).filter(l=>l.finished);
+    const finishedLessons=(payload.lessons||[]).filter(l=>l.finished);
+    // 23 Aug 2026: ALSO show a lesson the child worked on but didn't finish WHEN the
+    // teacher wrote a comment about that session (teachers asked to report on what was
+    // done/achieved in a session that didn't reach the end of the lesson).
+    // Counts, KPIs and "lessons completed" still use FINISHED lessons only.
+    const inProgressCommented=(payload.lessons||[]).filter(l=>
+      !l.finished && l.teacherComment && (l.lessonId||'').indexOf('best-video-')!==0);
+    const lessons=finishedLessons.concat(inProgressCommented);
     lessons.sort((a,b)=> new Date(b.updatedAt||0) - new Date(a.updatedAt||0));
     const name = payload.name || '';
     document.getElementById('totals').textContent =
-      (name? name+' · ':'') + lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length+
+      (name? name+' · ':'') + finishedLessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length+
       ' lessons completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
     document.getElementById('repdate').textContent='Progress report · generated '+fmtDate(new Date())+' · Autobotic STEM EDU';
 
-    renderKpis(payload, lessons);
+    renderKpis(payload, finishedLessons);
     renderTeacherNote(payload);
     const skillLines=renderSkills(payload.videos||[]);
     const projLines=renderProjects(payload.projects);
     const imccLines=renderImcc(payload.imcc);
+    const fdnLines=renderFoundation(payload.foundationLessons);
+    const aiLines=renderAiPitch(payload.aiPitch);
     renderRecognition(payload);
 
     const list=document.getElementById('list'); list.innerHTML='';
@@ -394,13 +477,17 @@
     const lessonBlocks=[];
     lessons.forEach(l=>{
       const best=(l.lessonId||'').indexOf('best-video-')===0;
+      const wip=!l.finished && !best;      // worked on in class, not finished yet
       const s=best
         ? {ico:'🏆', what:'Voted Best Video of the Month by their classmates — bonus +100 XP. A proud moment!'}
-        : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
+        : wip
+          ? {ico:'⏳', what:'Working on this lesson in class — see the teacher’s note below for what was done this session.'}
+          : (SUMMARIES[l.lessonId]||{ico:'🎓',what:'Completed this lesson with hands-on coding and hardware work.'});
       const title=l.lessonTitle||(SUMMARIES[l.lessonId]||{}).title||TITLES_FALLBACK(l.lessonId);
       const notes=(l.badges||[]).map(b=>BADGE_NOTES[b]).filter(Boolean);
       const hasScore=(l.quizScore!==undefined&&l.quizScore!==null&&l.quizScore!=='');
-      if(!best) notes.push('✅ quiz completed'+(hasScore?' · '+l.quizScore+'%':''));
+      if(wip) notes.push('⏳ in progress');
+      else if(!best) notes.push('✅ quiz completed'+(hasScore?' · '+l.quizScore+'%':''));
       const ml=pj(l.missionLog,null);
       let own='';
       if(ml && (ml.built||ml.fixed||ml.broke)){
@@ -433,8 +520,10 @@
     t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
     if(lessonBlocks.length>3) t+='\n   …and '+(lessonBlocks.length-3)+' more on the full report';
     if(imccLines&&imccLines.length) t+='\n\n*IMCC robotics:* '+imccLines.join('; ');
+    if(fdnLines&&fdnLines.length) t+='\n\n*Intermediate Foundation lessons:*\n'+fdnLines.join('\n');
     if(skillLines&&skillLines.length) t+='\n*Build videos:* '+skillLines.join('; ');
     if(projLines&&projLines.length) t+='\n\n*Projects:*\n'+projLines.join('\n');
+    if(aiLines&&aiLines.length) t+='\n\n*AI Development & Pitching:* '+aiLines.join(' ').replace(/^- /,'');
     latestText=t;
     const wa=document.getElementById('waBtn'); wa.href='https://wa.me/?text='+encodeURIComponent(latestText);
   }
@@ -442,9 +531,14 @@
   function copyUpdate(){
     if(!latestText) return;
     const done=()=>{const c=document.getElementById('copied');c.style.display='inline';setTimeout(()=>c.style.display='none',1600);};
-    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(latestText).then(done).catch(()=>fallback(done)); }
-    else fallback(done);
-    function fallback(cb){ const ta=document.createElement('textarea');ta.value=latestText;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}ta.remove();cb(); }
+    /* execCommand FIRST. writeText() REJECTS in the Wix cross-origin iframe,
+       and a rejection handler runs asynchronously - after the click gesture
+       has expired - so execCommand cannot copy from there either.
+       Do not reorder. */
+    if(fallback()){ done(); }
+    else if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(latestText).then(done).catch(()=>{ window.prompt('Copy this update:', latestText); done(); }); }
+    else { window.prompt('Copy this update:', latestText); done(); }
+    function fallback(){ const ta=document.createElement('textarea');ta.value=latestText;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok; }
   }
 
   window.addEventListener('message',(e)=>{ const d=e.data;
