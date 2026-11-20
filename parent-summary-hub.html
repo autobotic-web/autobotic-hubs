@@ -468,7 +468,15 @@
 
     const list=document.getElementById('list'); list.innerHTML='';
     document.getElementById('feedhead').style.display=lessons.length?'block':'none';
-    if(!lessons.length){ list.innerHTML='<div class="empty">No completed lessons yet — the first update will appear after the first finished mission! 🚀</div>'; return; }
+    /* 20 Nov 2026: a Foundation-only child has no Intermediate lessons yet — keep going so the
+       WhatsApp / copy text is still built from their Foundation (and AI pitch) progress. */
+    const otherProgress=(fdnLines&&fdnLines.length)||(aiLines&&aiLines.length);
+    if(!lessons.length){
+      list.innerHTML='<div class="empty">'+(otherProgress
+        ?'Intermediate lessons start after Foundation — see the progress above. 🚀'
+        :'No completed lessons yet — the first update will appear after the first finished mission! 🚀')+'</div>';
+      if(!otherProgress) return;
+    }
     // Share text: NO emoji (they corrupt to ? in the WhatsApp URL hand-off on some
     // devices). WhatsApp *asterisk bold* + plain hyphens only. One block per lesson.
     const waMonth=(id)=>{ const m=/best-video-(\d{4})-(\d{2})/.exec(id||''); if(!m) return '';
@@ -516,8 +524,10 @@
     });
     const realCount=lessons.filter(l=>(l.lessonId||'').indexOf('best-video-')!==0).length;
     let t='*'+(name?name:'Your child')+' — AI & Robotics progress update* ('+fmtDate(new Date())+')';
-    t+='\n\n*Lessons:* '+realCount+' completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
-    t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
+    if(realCount||!otherProgress){
+      t+='\n\n*Lessons:* '+realCount+' completed · Level '+(payload.level||1)+' · '+(payload.totalXp||0)+' XP';
+      t+='\n'+lessonBlocks.slice(0,3).map(b=>b.join('\n')).join('\n');
+    }
     if(lessonBlocks.length>3) t+='\n   …and '+(lessonBlocks.length-3)+' more on the full report';
     if(imccLines&&imccLines.length) t+='\n\n*IMCC robotics:* '+imccLines.join('; ');
     if(fdnLines&&fdnLines.length) t+='\n\n*Intermediate Foundation lessons:*\n'+fdnLines.join('\n');
