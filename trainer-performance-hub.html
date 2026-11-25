@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trainer Performance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1120; --panel: #121A2E; --panel2: #18223A; --line: #24304D;
+    --teal: #00C9A7; --text: #E8EDF7; --muted: #8C99B5;
+    --ex: #00C9A7; --good: #F5C542; --ni: #FF9F43; --ap: #FF5C6C; --grey: #56627E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--navy); color: var(--text); font: 15px/1.5 'DM Sans', system-ui, sans-serif; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font: 800 24px/1.2 'Sora', sans-serif; margin: 0 0 4px; }
+  h2 { font: 700 16px/1.3 'Sora', sans-serif; margin: 28px 0 10px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .tabs { display: flex; gap: 6px; margin: 14px 0 0; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 90px; background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+         padding: 9px 8px; border-radius: 10px; font: 600 13px 'Sora', sans-serif; cursor: pointer; text-align: center; }
+  .tab.on { background: var(--teal); border-color: var(--teal); color: var(--navy); }
+  .step { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 600 11px 'JetBrains Mono', monospace;
+          letter-spacing: .08em; text-transform: uppercase; margin-top: 18px; }
+  .step b { background: var(--teal); color: var(--navy); width: 20px; height: 20px; border-radius: 50%; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 11px; }
+  details.guide { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 4px 16px; margin-top: 16px; }
+  details.guide summary { cursor: pointer; font: 700 15px 'Sora', sans-serif; padding: 12px 0; list-style: none; }
+  details.guide summary::after { content: '＋'; float: right; color: var(--teal); }
+  details.guide[open] summary::after { content: '－'; }
+  .guide p, .guide li { color: #C9D2E6; font-size: 14px; }
+  .guide ul { padding-left: 18px; margin: 6px 0 12px; }
+  .bands { display: grid; gap: 6px; margin: 8px 0 14px; }
+  .band { display: grid; grid-template-columns: 150px 1fr; gap: 8px; font-size: 13px; align-items: start; }
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 700 12px 'DM Sans', sans-serif; white-space: nowrap; }
+  .c-Excellent { background: rgba(0,201,167,.15); color: var(--ex); }
+  .c-Good { background: rgba(245,197,66,.15); color: var(--good); }
+  .c-Needs { background: rgba(255,159,67,.15); color: var(--ni); }
+  .c-Action { background: rgba(255,92,108,.15); color: var(--ap); }
+  .c-None { background: rgba(140,153,181,.15); color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-top: 10px; }
+  .card.me { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal) inset; }
+  .card.unassigned { background: #1E1520; border-color: #4A2333; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .rank { font: 800 18px 'Sora', sans-serif; color: var(--muted); width: 28px; }
+  .who { flex: 1; min-width: 0; }
+  .who .nm { font: 700 16px 'Sora', sans-serif; }
+  .who .meta { color: var(--muted); font-size: 12px; }
+  .pct { font: 700 26px 'JetBrains Mono', monospace; }
+  .bar { height: 6px; background: var(--panel2); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .bar i { display: block; height: 100%; background: var(--teal); }
+  .items { margin-top: 12px; display: grid; gap: 5px; }
+  .item { display: grid; grid-template-columns: 1fr auto; font-size: 13px; color: #C9D2E6; }
+  .item .n { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  .item .n.miss { color: var(--ap); }
+  details.miss { margin-top: 10px; }
+  details.miss summary { cursor: pointer; color: var(--ap); font-weight: 700; font-size: 13px; }
+  details.miss li { font-size: 13px; color: #C9D2E6; margin: 3px 0; }
+  .action { margin-top: 10px; font-size: 13px; background: var(--panel2); border-radius: 10px; padding: 8px 10px; }
+  .action b { color: var(--teal); }
+  table.yr { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  table.yr th, table.yr td { padding: 6px 3px; text-align: center; border-bottom: 1px solid var(--line); }
+  table.yr th { color: var(--muted); font: 600 10px 'JetBrains Mono', monospace; }
+  table.yr td.nm { text-align: left; font-weight: 700; white-space: nowrap; }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+  .result { background: linear-gradient(135deg, rgba(0,201,167,.12), rgba(0,201,167,.02)); border: 1px solid rgba(0,201,167,.4);
+            border-radius: 14px; padding: 14px 16px; margin-top: 16px; }
+  .result .big { font: 800 20px 'Sora', sans-serif; }
+  .btn { background: var(--teal); color: var(--navy); border: 0; border-radius: 10px; padding: 10px 14px; font: 700 14px 'Sora', sans-serif; cursor: pointer; width: 100%; margin-top: 14px; }
+  .btn.ghost { background: transparent; color: var(--teal); border: 1px solid var(--teal); }
+  .disabled { opacity: .45; pointer-events: none; }
+  .loading { text-align: center; color: var(--muted); padding: 60px 0; }
+  .err { color: var(--ap); }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--teal); color: var(--navy);
+           padding: 8px 14px; border-radius: 10px; font-weight: 700; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Trainer Performance</h1>
+  <div class="sub" id="gen">Loading…</div>
+
+  <div class="step"><b>1</b> Choose period</div>
+  <div class="tabs" id="periodTabs">
+    <button class="tab on" data-v="week">This week</button>
+    <button class="tab" data-v="month">This month</button>
+    <button class="tab" data-v="year">This year</button>
+  </div>
+  <div class="step"><b>2</b> Choose course</div>
+  <div class="tabs" id="courseTabs">
+    <button class="tab on" data-v="all">All</button>
+    <button class="tab" data-v="beginner">Beginner</button>
+    <button class="tab" data-v="intermediate">Intermediate</button>
+  </div>
+
+  <details class="guide" id="guide">
+    <summary>How to read this page</summary>
+    <p><b>Your score</b> is the % of your required tasks done on time. Example: 38 of 40 tasks done = 95%. It is a %, so trainers with more classes are not punished.</p>
+    <div class="bands">
+      <div class="band"><span><span class="chip c-Excellent">Excellent 95%+</span></span><span>Well done. Keep it up.</span></div>
+      <div class="band"><span><span class="chip c-Good">Good 85–94%</span></span><span>Fix your missed items by Wednesday.</span></div>
+      <div class="band"><span><span class="chip c-Needs">Needs improvement 70–84%</span></span><span>Fix by Wednesday + 10-min check-in with Kian.</span></div>
+      <div class="band"><span><span class="chip c-Action">Action plan below 70%</span></span><span>Private meeting and written improvement plan.</span></div>
+      <div class="band"><span><span class="chip c-None">No sessions logged</span></span><span>You taught but didn't log. Log every session in the teacher console.</span></div>
+    </div>
+    <p><b>What we check, and what to do if you miss one:</b></p>
+    <ul id="itemGuide"></ul>
+    <p><b>Unassigned</b> = student work with no logged session, so no trainer gets credit. Log every session to fix this.</p>
+    <p><b>Think a result is wrong?</b> Tell Thiri by Monday with proof (screenshot or link). If you're right, it gets corrected.</p>
+    <p>Not tracked here yet: weekly random videos, showcase and group videos in Lark, and parent meetings. Thiri checks those in the weekly sheet.</p>
+  </details>
+
+  <div id="out"><div class="loading">Loading scores…</div></div>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(function () {
+  var DATA = null, PERIOD = 'week', COURSE = 'all';
+  var ACTIONS = {
+    sessionNote: 'Log every session with a lesson comment, the same day.',
+    lessonComment: 'Write the teacher comment on each finished lesson by Wednesday.',
+    quizDone: 'Get the student to finish the lesson and quiz at the start of their next class.',
+    notStuck: 'Student stuck 3+ sessions on one item: change approach, and tell the parent within 7 days.',
+    videoReviewed: 'Review and score build videos within 7 days.'
+  };
+  var MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pct(v) { return v == null ? '–' : Math.round(v * 100) + '%'; }
+  function chipClass(r) { return r ? 'c-' + String(r).split(' ')[0].replace('No', 'None') : 'c-None'; }
+  function color(v) { if (v == null) return 'var(--grey)'; if (v >= .95) return 'var(--ex)'; if (v >= .85) return 'var(--good)'; if (v >= .7) return 'var(--ni)'; return 'var(--ap)'; }
+
+  function tabs(id, cb) {
+    $(id).addEventListener('click', function (e) {
+      var b = e.target.closest('.tab'); if (!b) return;
+      [].forEach.call($(id).children, function (x) { x.classList.toggle('on', x === b); });
+      cb(b.getAttribute('data-v')); render();
+    });
+  }
+  tabs('periodTabs', function (v) { PERIOD = v; });
+  tabs('courseTabs', function (v) { COURSE = v; });
+
+  function card(r, labels) {
+    var me = DATA.me && r.email === DATA.me;
+    var items = Object.keys(labels).map(function (k) {
+      var it = r.items[k]; if (!it || !it.total) return '';
+      var miss = it.total - it.done;
+      return '<div class="item"><span>' + esc(labels[k]) + '</span><span class="n' + (miss ? ' miss' : '') + '">' + it.done + '/' + it.total + '</span></div>';
+    }).join('');
+    var missedKinds = {};
+    (r.missed || []).forEach(function (m) { missedKinds[m.item] = 1; });
+    var acts = Object.keys(missedKinds).map(function (k) { return '<li>' + esc(ACTIONS[k] || '') + '</li>'; }).join('');
+    var missed = r.missedCount ? '<details class="miss"><summary>Missed: ' + r.missedCount + ' item' + (r.missedCount > 1 ? 's' : '') + (PERIOD === 'year' ? '' : ' (fix by Wednesday)') + '</summary><ul>' +
+      (r.missed || []).map(function (m) { return '<li>' + esc(m.text) + '</li>'; }).join('') +
+      (r.missedCount > (r.missed || []).length ? '<li>…and ' + (r.missedCount - r.missed.length) + ' more</li>' : '') + '</ul>' +
+      (acts ? '<div class="action"><b>What to do:</b><ul>' + acts + '</ul></div>' : '') + '</details>' : '';
+    if (r.unassigned) {
+      return '<div class="card unassigned"><div class="top"><div class="rank">!</div><div class="who"><div class="nm">Unassigned work</div>' +
+        '<div class="meta">Student lessons with no session logged by any trainer</div></div><div class="pct" style="color:var(--ap)">' + (r.possible || 0) + '</div></div>' +
+        '<div class="action"><b>Action for all trainers:</b> log every session in the teacher console, so this work is credited to you.</div>' + (items ? '<div class="items">' + items + '</div>' : '') + missed + '</div>';
+    }
+    var noLog = r.rating === 'No sessions logged';
+    return '<div class="card' + (me ? ' me' : '') + '"><div class="top"><div class="rank">' + (r.rank || '–') + '</div>' +
+      '<div class="who"><div class="nm">' + esc(r.name) + (me ? ' (you)' : '') + '</div><div class="meta">' + r.sessions + ' sessions · ' + r.students + ' students · ' + r.certs + ' certificate' + (r.certs === 1 ? '' : 's') + '</div></div>' +
+      '<div style="text-align:right"><div class="pct" style="color:' + color(r.score) + '">' + pct(r.score) + '</div><span class="chip ' + chipClass(r.rating) + '">' + esc(r.rating || '–') + '</span></div></div>' +
+      (r.score != null ? '<div class="bar"><i style="width:' + Math.round(r.score * 100) + '%;background:' + color(r.score) + '"></i></div>' : '') +
+      (noLog ? '<div class="action"><b>What to do:</b> log every session you teach in the teacher console, with a comment.</div>' : '') +
+      (items ? '<div class="items">' + items + '</div>' : '') + missed + '</div>';
+  }
+
+  function history(h) {
+    if (!h || !h.length) return '';
+    var rows = h.slice().sort(function (a, b) { return b.monthsBelow85 - a.monthsBelow85 || b.weeksWithMisses - a.weeksWithMisses; }).map(function (x) {
+      var cells = MONTHS.map(function (m, i) { var v = x.months[i + 1]; return '<td><span class="dot" title="' + pct(v) + '" style="background:' + (v == null ? 'var(--panel2)' : color(v)) + '"></span></td>'; }).join('');
+      return '<tr><td class="nm">' + esc(x.name) + '</td>' + cells + '<td class="mono">' + x.monthsAtTarget + '</td><td class="mono" style="color:' + (x.monthsBelow85 >= 2 ? 'var(--ap)' : 'inherit') + '">' + x.monthsBelow85 + '</td><td class="mono">' + x.weeksWithMisses + '</td></tr>';
+    }).join('');
+    return '<h2>Repeat record, ' + DATA.year + '</h2><div class="sub">Each square is one month. Green 95%+, yellow 85–94%, orange 70–84%, red below 70%, dark = no data. 2 or more months below 85% means a private improvement plan.</div>' +
+      '<div style="overflow-x:auto"><table class="yr"><tr><th></th>' + MONTHS.map(function (m) { return '<th>' + m + '</th>'; }).join('') + '<th>AT<br>95%</th><th>BELOW<br>85%</th><th>WEEKS<br>MISSED</th></tr>' + rows + '</table></div>';
+  }
+
+  function summaryText(rows, label) {
+    var title = { week: 'This week', month: 'This month', year: 'Year to date' }[PERIOD];
+    var c = { all: '', beginner: ' (Beginner)', intermediate: ' (Intermediate)' }[COURSE];
+    var lines = ['📊 Trainer Report – ' + title + c + ' (' + label + ')', 'Target: 95% of required tasks done on time', ''];
+    var medals = ['🥇', '🥈', '🥉'];
+    if (!rows.some(function (r) { return !r.unassigned; })) lines.push('No sessions logged yet in this period.');
+    rows.filter(function (r) { return !r.unassigned; }).forEach(function (r) {
+      lines.push((r.rank && r.rank <= 3 ? medals[r.rank - 1] + ' ' : '• ') + r.name + ' – ' + pct(r.score) + ' ' + (r.rating || ''));
+    });
+    var missers = rows.filter(function (r) { return !r.unassigned && r.missedCount; });
+    if (missers.length) {
+      lines.push('', PERIOD === 'year' ? 'Missed this year:' : 'Missed (please fix by Wednesday):');
+      missers.forEach(function (r) { lines.push('• ' + r.name + ' – ' + r.missedCount + ' item' + (r.missedCount > 1 ? 's' : '')); });
+    }
+    var un = rows.filter(function (r) { return r.unassigned; })[0];
+    if (un && un.possible) lines.push('', '⚠️ ' + un.possible + ' tasks are Unassigned because no session was logged. Log every session.');
+    lines.push('', 'ℹ️ How to read this: open Trainer Performance in the teacher console and tap "How to read this page". Think a result is wrong? Tell Thiri by Monday with proof.');
+    return lines.join('\n');
+  }
+
+  function render() {
+    if (!DATA) return;
+    if (DATA.error) { $('out').innerHTML = '<div class="card err">Could not load scores: ' + esc(DATA.error) + '</div>'; return; }
+    var c = DATA.courses[COURSE]; var p = c[PERIOD];
+    var rows = p.rows || [];
+    var scored = rows.filter(function (r) { return !r.unassigned && r.score != null; });
+    var team = scored.length ? scored.reduce(function (a, r) { return a + r.earned; }, 0) / scored.reduce(function (a, r) { return a + r.possible; }, 0) : null;
+    var atTarget = scored.filter(function (r) { return r.score >= .95; }).length;
+    var html = '<div class="step"><b>3</b> Result</div><div class="result"><div class="sub">' + esc(p.label) + '</div>' +
+      '<div class="big">Team score <span class="mono" style="color:' + color(team) + '">' + pct(team) + '</span></div>' +
+      '<div class="sub">' + atTarget + ' of ' + scored.length + ' scored trainers at target (95%+)</div></div>';
+    html += '<h2>Ranking</h2>' + (rows.length ? rows.map(function (r) { return card(r, DATA.labels); }).join('') : '<div class="card sub">No activity in this period yet.</div>');
+    if (PERIOD === 'year') html += history(c.history);
+    html += '<button class="btn" id="copyBtn">Copy summary for the Lark group</button>' +
+      '<button class="btn ghost" id="reloadBtn">Refresh scores</button>';
+    $('out').innerHTML = html;
+    $('copyBtn').onclick = function () {
+      var txt = summaryText(rows, p.label);
+      var done = function () { var t = $('toast'); t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { prompt('Copy this:', txt); });
+      else prompt('Copy this:', txt);
+    };
+    $('reloadBtn').onclick = function () { $('out').innerHTML = '<div class="loading">Refreshing…</div>'; parent.postMessage({ source: 'trainer-scorecard-reload' }, '*'); };
+  }
+
+  function receive(d) {
+    if (!d || d.source !== 'trainer-scorecard') return;
+    DATA = d;
+    $('gen').textContent = d.error ? '' : 'Updated ' + new Date(d.generatedAt).toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' });
+    if (!d.error) {
+      $('itemGuide').innerHTML = Object.keys(d.labels).map(function (k) {
+        return '<li><b>' + esc(d.labels[k]) + '</b> (' + d.weights[k] + ' pt' + (d.weights[k] > 1 ? 's' : '') + '): ' + esc(ACTIONS[k] || '') + '</li>';
+      }).join('');
+      try { if (!localStorage.getItem('tpGuideSeen')) { $('guide').open = true; localStorage.setItem('tpGuideSeen', '1'); } } catch (e) { $('guide').open = true; }
+    }
+    render();
+  }
+  window.addEventListener('message', function (e) { receive(e.data); });
+
+  // ping the Wix page until data arrives
+  var tries = 0;
+  var iv = setInterval(function () {
+    if (DATA || ++tries > 40) return clearInterval(iv);
+    try { parent.postMessage({ source: 'trainer-scorecard-ready' }, '*'); } catch (e) {}
+  }, 750);
+
+  // standalone preview: ?demo=1
+  if (/[?&]demo=1/.test(location.search) && window.DEMO) receive(window.DEMO);
+})();
+</script>
+</body>
+</html>
