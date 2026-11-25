@@ -222,7 +222,14 @@
     $('copyBtn').onclick = function () {
       var txt = summaryText(rows, p.label);
       var done = function () { var t = $('toast'); t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 1500); };
-      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { prompt('Copy this:', txt); });
+      /* execCommand FIRST: writeText() rejects inside the Wix cross-origin iframe, and its
+         rejection runs after the click gesture has expired, so nothing could copy from there.
+         Do not reorder (same rule as the other hubs, 25 Nov 2026). */
+      var ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove();
+      if (ok) done();
+      else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { prompt('Copy this:', txt); });
       else prompt('Copy this:', txt);
     };
     $('reloadBtn').onclick = function () { $('out').innerHTML = '<div class="loading">Refreshing…</div>'; parent.postMessage({ source: 'trainer-scorecard-reload' }, '*'); };
